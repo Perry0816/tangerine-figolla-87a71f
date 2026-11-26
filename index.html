@@ -179,7 +179,7 @@ dialog::backdrop{background:#0007}
 <body>
 <header>
   <h1>🐉 怪獸圖鑑工坊</h1>
-  <span class="sub">把小朋友的塗鴉變成卡牌、對戰、可印可送的作品集 · <span id="buildTag">v2 · 更新 11/26 · 手機平板版面</span></span>
+  <span class="sub">把小朋友的塗鴉變成卡牌、對戰、可印可送的作品集 · <span id="buildTag">v2 · 更新 11/26 · 多圖拆分</span></span>
 </header>
 <p class="sub" style="max-width:1200px;margin:0 auto 10px;padding:0 0 0 0">🔒 隱私：你上傳的照片只在這台裝置的瀏覽器裡處理與保存，別人也看不到。換裝置或清除網站資料後會消失。<b>唯一的例外</b>：你勾選「🤖 讓 Claude 讀照片上的名字」並按下「轉成卡片」（或在編輯視窗按「讓 Claude 讀名字」）時，被框選的卡片圖會送給 Claude 辨識名字；第一次會先問你同意，不勾就完全不會送出。</p>
 <div id="storeBar" class="sub" style="max-width:1200px;margin:0 auto 10px"></div>
@@ -227,6 +227,7 @@ dialog::backdrop{background:#0007}
     <button class="b" id="selAll">全選</button>
     <button class="b" id="selNone">取消選取</button>
     <button class="b" id="nameSel">🎲 選取卡片隨機取名</button>
+    <button class="b" id="splitSel">✂️ 拆開選取的多圖卡</button>
     <button class="b" id="colSel">🎨 隨機換色（選取；未選＝全部）</button>
     <button class="b" id="delSel" style="color:#c0392b">🗑 刪除選取</button>
     <button class="b" id="exp" hidden>匯出資料</button>
@@ -342,6 +343,7 @@ dialog::backdrop{background:#0007}
       <button class="b p" value="save" id="save">儲存</button>
       <button class="b" type="button" id="rcolBtn">🎨 隨機換色</button>
       <button class="b" type="button" id="readNameBtn" hidden>🤖 讓 Claude 讀名字</button>
+      <button class="b" type="button" id="splitBtn">✂️ 拆成多張</button>
       <button class="b" type="button" id="rnameBtn">🎲 隨機取名</button>
       <button class="b" type="button" id="rskillBtn">🎲 隨機技能</button>
       <button class="b" type="button" id="mouthBtn">🦷 張嘴設定</button>
@@ -1457,9 +1459,12 @@ function detect(){
   };
   let res={out:[],full:false};
   for(const rf of [.022,.014,.008,.004]){const r2=run(rf);if(r2.out.length>res.out.length||(!res.out.length&&r2.full))res=r2}
-  boxes=res.out.sort((a,b)=>(Math.abs(a.y-b.y)<SRC.height*.12?a.x-b.x:a.y-b.y));
+  boxes=res.out;
+  let splitN=0;
+  try{const sp=autoSplit(boxes,SRC,res.full);boxes=sp.boxes;splitN=sp.n}catch(e){}
+  boxes=boxes.sort((a,b)=>(Math.abs(a.y-b.y)<SRC.height*.12?a.x-b.x:a.y-b.y));
   if(!boxes.length&&!res.full)boxes=[{x:0,y:0,w:SRC.width,h:SRC.height,on:true}];
-  detNote=res.full?"圖與圖黏在一起，自動分不開，已盡量框出能分開的；其餘請在空白處拖曳自己框。":"";
+  detNote=splitN?`已自動把黏在一起的圖分開（多分出 ${splitN} 個框）。`:(res.full?"圖與圖黏在一起，自動分不開，已盡量框出能分開的；其餘請在空白處拖曳自己框。":"");
   drawBoxes();
 }
 let detNote="";
@@ -1726,6 +1731,91 @@ window.addEventListener("beforeunload",e=>{if(CLOUD.db&&(CLOUD.busy||CLOUD.tm&&L
   try{if(!LS.get("mc_seen_guide")){LS.set("mc_seen_guide","1");if(!inFrame)$("#guide").open=true}}catch(e){}
   sched();
 })();
+/* ---- 多圖拆分：一個框裡有好幾隻怪獸時，沿著「空白縫隙」切開 ---- */
+function contentMask(c,maxW){
+  const gw=Math.min(maxW||480,c.width),gh=Math.max(1,Math.round(c.height*gw/c.width)),t=document.createElement("canvas");t.width=gw;t.height=gh;
+  const tx=t.getContext("2d",{willReadFrequently:true});tx.drawImage(c,0,0,gw,gh);const d=tx.getImageData(0,0,gw,gh).data,A=gw*gh,lum=new Float32Array(A),hist=new Uint32Array(256);
+  for(let i=0;i<A;i++){const l=.299*d[i*4]+.587*d[i*4+1]+.114*d[i*4+2];lum[i]=l;hist[l|0]++}
+  let acc=0,bg=255;for(let v=0;v<256;v++){acc+=hist[v];if(acc>=A*.85){bg=v;break}}
+  const m=new Uint8Array(A);
+  for(let i=0;i<A;i++){const r=d[i*4],g=d[i*4+1],b=d[i*4+2],mx=Math.max(r,g,b),mn=Math.min(r,g,b);m[i]=(lum[i]<bg-34||(mx>90&&(mx-mn)/mx>.28))?1:0}
+  return{w:gw,h:gh,m,k:c.width/gw};
+}
+function splitRegion(M,x0,y0,x1,y1,depth,out){
+  const {w,m}=M;
+  // 縮到內容的外框
+  let a=x1,b=x0,c=y1,d=y0;
+  for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++)if(m[y*w+x]){if(x<a)a=x;if(x>b)b=x;if(y<c)c=y;if(y>d)d=y}
+  if(b<a||d<c)return;x0=a;x1=b+1;y0=c;y1=d+1;
+  const bw=x1-x0,bh=y1-y0;
+  if(depth<7&&bw>12&&bh>12){
+    const col=new Uint32Array(bw),row=new Uint32Array(bh);
+    for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++)if(m[y*w+x]){col[x-x0]++;row[y-y0]++}
+    const best=(prof,len,cross)=>{ // 找最寬的空白縫（不含兩端）
+      const tol=Math.max(1,cross*.006),minGap=Math.max(3,len*.014);let bestRun=null,i=0;
+      while(i<len){if(prof[i]<=tol){let j=i;while(j<len&&prof[j]<=tol)j++;if(i>0&&j<len&&j-i>=minGap&&(!bestRun||j-i>bestRun[1]-bestRun[0]))bestRun=[i,j];i=j}else i++}
+      return bestRun};
+    const vg=best(col,bw,bh),hg=best(row,bh,bw);
+    let cut=null;
+    if(vg&&(!hg||(vg[1]-vg[0])/bw>=(hg[1]-hg[0])/bh))cut=["v",vg];else if(hg)cut=["h",hg];
+    if(cut){
+      const [ax,[g0,g1]]=cut,A=ax==="v"?[x0,y0,x0+g0,y1]:[x0,y0,x1,y0+g0],B=ax==="v"?[x0+g1,y0,x1,y1]:[x0,y0+g1,x1,y1];
+      const area=r=>(r[2]-r[0])*(r[3]-r[1]);
+      // 切出來的小碎片（例如一條尾巴）不算獨立的圖：面積太小就不切
+      if(area(A)>=bw*bh*.12&&area(B)>=bw*bh*.12){splitRegion(M,...A,depth+1,out);splitRegion(M,...B,depth+1,out);return}
+    }
+  }
+  out.push([x0,y0,x1,y1]);
+}
+function autoSplit(boxes,SRC,full){
+  const M=contentMask(SRC,480),W=SRC.width,H=SRC.height,res=[];let n=0;
+  const big=b=>b.w*b.h>W*H*.22||(b.w>W*.45&&b.h>H*.45);
+  const todo=boxes.slice(),keep=[];
+  if(full&&!boxes.length)todo.push({x:0,y:0,w:W,h:H,on:true,_whole:1});
+  for(const b of todo){
+    if(!b._whole&&!big(b)){keep.push(b);continue}
+    const out=[];splitRegion(M,Math.max(0,Math.floor(b.x/M.k)),Math.max(0,Math.floor(b.y/M.k)),Math.min(M.w,Math.ceil((b.x+b.w)/M.k)),Math.min(M.h,Math.ceil((b.y+b.h)/M.k)),0,out);
+    if(out.length<2){if(!b._whole)keep.push(b);continue}
+    n+=out.length-1;
+    out.forEach(([x0,y0,x1,y1])=>{const pad=Math.max(3,Math.round(Math.max(x1-x0,y1-y0)*.02)),x=Math.max(0,x0-pad)*M.k,y=Math.max(0,y0-pad)*M.k;
+      res.push({x,y,w:Math.min(W,(x1+pad)*M.k)-x,h:Math.min(H,(y1+pad)*M.k)-y,on:true})});
+  }
+  return{boxes:keep.concat(res),n};
+}
+async function splitCardImage(src){
+  const im=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=src});
+  const k=Math.min(1,1400/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);
+  const M=contentMask(c,480),out=[];splitRegion(M,0,0,M.w,M.h,0,out);
+  if(out.length<2)return null;
+  const png=src.startsWith("data:image/png");
+  return out.map(([x0,y0,x1,y1])=>{
+    const pad=Math.max(3,Math.round(Math.max(x1-x0,y1-y0)*.02)),x=Math.max(0,x0-pad)*M.k,y=Math.max(0,y0-pad)*M.k,w=Math.min(c.width,(x1+pad)*M.k)-x,h=Math.min(c.height,(y1+pad)*M.k)-y;
+    const o=document.createElement("canvas");o.width=Math.max(1,Math.round(w));o.height=Math.max(1,Math.round(h));o.getContext("2d").drawImage(c,x,y,w,h,0,0,o.width,o.height);
+    return png?o.toDataURL("image/png"):o.toDataURL("image/jpeg",.85)});
+}
+async function splitCards(list){
+  let made=0,gone=[],t0=Date.now();const fresh=[];
+  for(const m of list){
+    let parts=null;try{parts=await splitCardImage(m.src)}catch(e){}
+    if(!parts)continue;
+    parts.forEach((src,i)=>{const st=randStats();fresh.push({id:"u"+t0+"_sp"+(made+i),src,name:randName(st.type),skill:TYPE_SKILL[st.type].ults[0],tv:TV,...st,story:"",by:m.by||"",wins:0,cp:null,t:t0+made+i})});
+    made+=parts.length;gone.push(m.id);
+  }
+  if(!gone.length){toast("沒有偵測到可以拆開的多圖卡（圖與圖之間要有一條空白縫隙）");return 0}
+  if(M.length-gone.length+fresh.length>MAX_CARDS){toast(`拆開後會超過上限 ${MAX_CARDS} 張，請先刪除一些卡片`);return 0}
+  const set=new Set(gone);M=M.filter(x=>!set.has(x.id)).concat(fresh);gone.forEach(i=>SELECTED.delete(i));save();renderAll();
+  toast(`已把 ${gone.length} 張多圖卡拆成 ${fresh.length} 張新卡（排在圖鑑最前面）。名字和屬性都是隨機的，可以再改。拆錯了可按「↩ 還原上一次存檔」`,null,null,10000);
+  return fresh.length;
+}
+$("#splitSel").onclick=async()=>{
+  const list=M.filter(m=>SELECTED.has(m.id));if(!list.length){toast("請先勾選要拆開的卡片");return}
+  const y=await ask(`對勾選的 ${list.length} 張嘗試拆圖：只有偵測到 2 張以上圖的卡才會拆開，原卡會被取代，新卡排在圖鑑最前面。拆錯了可以按「↩ 還原上一次存檔」。確定？`,"確定拆開");if(!y)return;
+  toast("拆圖中…",null,null,3000);await splitCards(list);
+};
+$("#splitBtn").onclick=async()=>{
+  if(!editing)return;const m=editing,y=await ask(`把「${m.name}」這張卡裡的多隻怪獸拆成各自一張？沒有偵測到 2 隻以上就不會動。可用「↩ 還原上一次存檔」找回。`,"拆開");if(!y)return;
+  $("#dlg").close();const n=await splitCards([m]);if(!n)toast("這張沒有偵測到可以拆開的多張圖")
+};
 /* ---- 換色按鈕 ---- */
 $("#rcolBtn").onclick=async()=>{if(!editing)return;const m=editing;toast("上色中…",null,null,60000);await recolor(m,"random");save();renderAll();if($("#editPrev"))$("#editPrev").src=m.src;toast("已隨機換色")};
 $("#colSel").onclick=()=>{

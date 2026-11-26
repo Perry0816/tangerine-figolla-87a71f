@@ -1,2 +1,2 @@
 怪獸圖鑑 App
-build: 2026-11-26 device-layout
+build: 2026-11-26 multi-split
