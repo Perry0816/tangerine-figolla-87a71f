@@ -179,7 +179,7 @@ dialog::backdrop{background:#0007}
 <body>
 <header>
   <h1>🐉 怪獸圖鑑工坊</h1>
-  <span class="sub">把小朋友的塗鴉變成卡牌、對戰、可印可送的作品集 · <span id="buildTag">v2 · 更新 11/26 · 魔術棒去背</span></span>
+  <span class="sub">把小朋友的塗鴉變成卡牌、對戰、可印可送的作品集 · <span id="buildTag">v2 · 更新 11/26 · 去背自動清碎屑</span></span>
 </header>
 <p class="sub" style="max-width:1200px;margin:0 auto 10px;padding:0 0 0 0">🔒 隱私：你上傳的照片只在這台裝置的瀏覽器裡處理與保存，別人也看不到。換裝置或清除網站資料後會消失。<b>唯一的例外</b>：你勾選「🤖 讓 Claude 讀照片上的名字」並按下「轉成卡片」（或在編輯視窗按「讓 Claude 讀名字」）時，被框選的卡片圖會送給 Claude 辨識名字；第一次會先問你同意，不勾就完全不會送出。</p>
 <div id="storeBar" class="sub" style="max-width:1200px;margin:0 auto 10px"></div>
@@ -893,9 +893,25 @@ function wandAt(x,y){
   const order=[];
   while(sp){const i=st[--sp];order.push(i);const X=i%w,Y=(i/w)|0;if(X>0)tryP(i-1,i);if(X<w-1)tryP(i+1,i);if(Y>0)tryP(i-w,i);if(Y<h-1)tryP(i+w,i)}
   order.forEach(i=>{d[i*4+3]=0});cnt=order.length;
+  const junk=cleanIslands();
   flush();
   const pct=Math.round(cnt*100/(w*h));
+  if(junk&&pct<=85){toast(`已去掉 ${pct}% 的背景，並自動清掉 ${junk} 個零碎的小塊（多半是散落的印刷字）。還有殘留就再點一下；去太多按「復原」`);return}
   toast(pct>85?`去掉了 ${pct}%，太多了。按「復原」，把「去背範圍」調小再試`:`已去掉 ${pct}% 的背景。還有殘留就再點一下；去太多按「復原」`);
+}
+/* 自動清碎屑：去背之後，和角色本體沒有相連的小塊（散落的印刷字、網點）整塊刪掉。
+   「小」＝面積不到最大那一塊的 2.5%；和角色相連的字（例如標籤蓋在身上）不會動，請用「去字」塗掉。 */
+function cleanIslands(){
+  const {w,h}=P,d=P.img.data,n=w*h,lab=new Int32Array(n),st=new Int32Array(n),areas=[0];let L=0;
+  for(let s0=0;s0<n;s0++){if(lab[s0]||d[s0*4+3]<10)continue;L++;let a=0,sp=0;st[sp++]=s0;lab[s0]=L;
+    while(sp){const i=st[--sp],X=i%w,Y=(i/w)|0;a++;
+      for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){if(!dx&&!dy)continue;const x=X+dx,y=Y+dy;if(x<0||y<0||x>=w||y>=h)continue;const j=y*w+x;if(!lab[j]&&d[j*4+3]>=10){lab[j]=L;st[sp++]=j}}}
+    areas.push(a)}
+  const big=Math.max(0,...areas),lim=Math.max(25,big*.025);let removed=0;const kill=new Uint8Array(areas.length);
+  areas.forEach((a,i)=>{if(i&&a<lim){kill[i]=1;removed++}});
+  if(!removed)return 0;
+  for(let i=0;i<n;i++)if(lab[i]&&kill[lab[i]])d[i*4+3]=0;
+  return removed;
 }
 /* 去字（修補筆）：以筆刷周圍一圈的「中位數顏色」填滿筆刷範圍，邊緣羽化。適合蓋掉書上印的字、標籤。 */
 function healStamp(cx,cy){
