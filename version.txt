@@ -1,2 +1,2 @@
 怪獸圖鑑 App
-build: 2026-11-26 beginner-guide
+build: 2026-11-26 device-layout

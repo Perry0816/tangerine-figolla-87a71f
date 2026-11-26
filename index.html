@@ -14,6 +14,22 @@
 @media (prefers-color-scheme:dark){:root{--bg:#1d1a17;--ink:#efe8dc;--mut:#a39a8e;--card:#2a2622;--line:#443d36;--acc:#ff7a5c;--acc2:#6bb6d6}}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
+/* ---- iPhone／iPad 適配：觸控大小、安全區、避免誤縮放 ---- */
+html{-webkit-text-size-adjust:100%;touch-action:manipulation}
+*{-webkit-tap-highlight-color:transparent}
+body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
+#pcv{touch-action:manipulation}
+@media (pointer:coarse){
+  button.b,label.b,nav button,select,input:not([type=checkbox]):not([type=range]):not([type=file]),#toast button{min-height:44px}
+  button.b,label.b{display:inline-flex;align-items:center}
+  .cw .del{min-height:40px;min-width:64px}
+  .cw .sel{width:30px;height:30px}
+  input[type=checkbox]{min-width:22px;min-height:22px}
+}
+@media (max-width:560px){
+  .bar select,.bar input:not([type=checkbox]):not([type=range]):not([type=file]){max-width:none!important;flex:1 1 150px}
+  header h1{font-size:20px}
+}
 #storeBar,#cloudBar,p.sub[style*="max-width:1200px"]{padding-left:16px!important;padding-right:16px!important}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
 header{padding:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;max-width:1200px;margin:auto}
@@ -121,7 +137,7 @@ dialog#mdlg{max-width:760px}
 #mvboard{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:980px;margin-top:12px}
 #mvboard .panel{margin:0}
 #mvboard .panel.active{outline:3px solid var(--acc);outline-offset:-1px}
-@media(max-width:700px){#mvboard{grid-template-columns:1fr}}
+@media(max-width:700px){#mvboard{grid-template-columns:1fr}#stage{position:sticky;top:0;z-index:5;max-height:34vh;max-height:34dvh;aspect-ratio:auto;height:34dvh;min-height:170px}}
 .mvgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
 .mv{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 10px;cursor:pointer;font:inherit;text-align:left;display:flex;flex-direction:column;gap:2px}
 .mv b{font-size:15px}.mv small{color:var(--mut);font-size:12px}.mv i{font-style:normal;font-size:12px;color:var(--mut)}
@@ -163,7 +179,7 @@ dialog::backdrop{background:#0007}
 <body>
 <header>
   <h1>🐉 怪獸圖鑑工坊</h1>
-  <span class="sub">把小朋友的塗鴉變成卡牌、對戰、可印可送的作品集 · <span id="buildTag">v2 · 更新 11/26 · 新手說明</span></span>
+  <span class="sub">把小朋友的塗鴉變成卡牌、對戰、可印可送的作品集 · <span id="buildTag">v2 · 更新 11/26 · 手機平板版面</span></span>
 </header>
 <p class="sub" style="max-width:1200px;margin:0 auto 10px;padding:0 0 0 0">🔒 隱私：你上傳的照片只在這台裝置的瀏覽器裡處理與保存，別人也看不到。換裝置或清除網站資料後會消失。<b>唯一的例外</b>：你勾選「🤖 讓 Claude 讀照片上的名字」並按下「轉成卡片」（或在編輯視窗按「讓 Claude 讀名字」）時，被框選的卡片圖會送給 Claude 辨識名字；第一次會先問你同意，不勾就完全不會送出。</p>
 <div id="storeBar" class="sub" style="max-width:1200px;margin:0 auto 10px"></div>
@@ -884,7 +900,7 @@ $("#pcv").addEventListener("pointermove",e=>{
   for(let k=1;k<=n;k++)stamp(Math.round(x0+(x-x0)*k/n),Math.round(y0+(y-y0)*k/n));_last=[x,y];flush();
 });
 ["pointerup","pointercancel"].forEach(t=>$("#pcv").addEventListener(t,()=>{_last=null}));
-function setMode(m){P.mode=m;$("#mFill").classList.toggle("p",m==="fill");$("#mBrush").classList.toggle("p",m==="brush");$("#pcv").style.cursor=m==="brush"?"cell":"crosshair"}
+function setMode(m){P.mode=m;$("#mFill").classList.toggle("p",m==="fill");$("#mBrush").classList.toggle("p",m==="brush");$("#pcv").style.cursor=m==="brush"?"cell":"crosshair";$("#pcv").style.touchAction=m==="brush"?"none":"manipulation"}
 $("#mFill").onclick=()=>setMode("fill");$("#mBrush").onclick=()=>setMode("brush");
 $("#brushSz").oninput=e=>{P.brush=+e.target.value};
 $("#pzoom").oninput=e=>{$("#pcv").style.width=e.target.value+"%"};
@@ -1224,7 +1240,8 @@ function renderBoard(S,turn,enabled,text){
 function previewMoves(a,b){
   renderSide(0,movesOf(a),false,`左方 ${a.name}：按「開打」後輪到你選招`,false);renderSide(1,movesOf(b),false,`右方 ${b.name}：按「開打」後輪到你選招`,false);
 }
-function askMove(S,turn,text){return new Promise(res=>{renderBoard(S,turn,true,text);pendingMove=i=>{pendingMove=null;res(i)}})}
+function askMove(S,turn,text){return new Promise(res=>{renderBoard(S,turn,true,text);pendingMove=i=>{pendingMove=null;res(i)}
+  if(innerWidth<=700){const el=document.querySelector("#mvboard .panel.active");if(el)setTimeout(()=>el.scrollIntoView({behavior:"smooth",block:"start"}),60)}})}
 $("#mvboard").addEventListener("click",e=>{const b=e.target.closest(".mv");if(b&&!b.disabled&&pendingMove)pendingMove(+b.dataset.i)});
 document.addEventListener("keydown",e=>{if(pendingMove&&/^[1-9]$/.test(e.key)&&!/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName))pendingMove(+e.key-1)});
 function aiPick(s,foe,moves){
