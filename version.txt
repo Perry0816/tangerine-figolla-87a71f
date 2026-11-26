@@ -1,3 +1,2 @@
 怪獸圖鑑 App
-build: 2026-11-26 icon-v2
-source: Perry0816/ai-sandbox @ claude/nifty-euler-iw70sz-v2
+build: 2026-11-26 no-manifest-link test
