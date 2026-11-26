@@ -179,7 +179,7 @@ dialog::backdrop{background:#0007}
 <body>
 <header>
   <h1>🐉 怪獸圖鑑工坊</h1>
-  <span class="sub">把小朋友的塗鴉變成卡牌、對戰、可印可送的作品集 · <span id="buildTag">v2 · 更新 11/26 · 多圖拆分</span></span>
+  <span class="sub">把小朋友的塗鴉變成卡牌、對戰、可印可送的作品集 · <span id="buildTag">v2 · 更新 11/26 · 去字＋讀屬性</span></span>
 </header>
 <p class="sub" style="max-width:1200px;margin:0 auto 10px;padding:0 0 0 0">🔒 隱私：你上傳的照片只在這台裝置的瀏覽器裡處理與保存，別人也看不到。換裝置或清除網站資料後會消失。<b>唯一的例外</b>：你勾選「🤖 讓 Claude 讀照片上的名字」並按下「轉成卡片」（或在編輯視窗按「讓 Claude 讀名字」）時，被框選的卡片圖會送給 Claude 辨識名字；第一次會先問你同意，不勾就完全不會送出。</p>
 <div id="storeBar" class="sub" style="max-width:1200px;margin:0 auto 10px"></div>
@@ -365,7 +365,7 @@ dialog::backdrop{background:#0007}
   </div>
   <div class="bar" id="pal"></div>
   <div class="bar">
-    <button class="b p" id="mFill">🪣 填色區塊</button><button class="b" id="mBrush">🖌 畫筆</button>
+    <button class="b p" id="mFill">🪣 填色區塊</button><button class="b" id="mBrush">🖌 畫筆</button><button class="b" id="mHeal" title="把書上印的字或雜物塗掉：用旁邊的顏色補起來">🩹 去字</button>
     <label class="b">自訂色<input type="color" id="pcol" value="#e63946" style="width:36px;height:22px;padding:0;border:0;vertical-align:middle"></label>
     <label>畫筆大小 <input id="brushSz" type="range" min="2" max="30" value="8" style="width:80px;vertical-align:middle"></label>
     <label>放大 <input id="pzoom" type="range" min="100" max="400" value="100" style="width:80px;vertical-align:middle"></label>
@@ -880,9 +880,22 @@ function stamp(cx,cy){
   for(let y=Math.max(0,cy-R);y<=Math.min(h-1,cy+R);y++)for(let x=Math.max(0,cx-R);x<=Math.min(w-1,cx+R);x++){
     if((x-cx)*(x-cx)+(y-cy)*(y-cy)>R*R)continue;const i=y*w+x,f=Math.min(1,lum[i]/215);d[i*4]=r*f;d[i*4+1]=g*f;d[i*4+2]=b*f}
 }
+/* 去字（修補筆）：以筆刷周圍一圈的「中位數顏色」填滿筆刷範圍，邊緣羽化。適合蓋掉書上印的字、標籤。 */
+function healStamp(cx,cy){
+  const {w,h}=P,d=P.img.data,R=Math.max(6,Math.round(P.brush*1.6)),ring=[];
+  for(let a=0;a<360;a+=12){const rad=a*Math.PI/180;for(const rr of [R+3,R+7]){const x=Math.round(cx+Math.cos(rad)*rr),y=Math.round(cy+Math.sin(rad)*rr);if(x>=0&&y>=0&&x<w&&y<h){const i=(y*w+x)*4;ring.push([d[i],d[i+1],d[i+2],.299*d[i]+.587*d[i+1]+.114*d[i+2]])}}}
+  if(!ring.length)return;
+  const light=ring.filter(q=>q[3]>110),use=light.length>=ring.length*.4?light:ring; // 排除周圍的深色字
+  const med=k=>{const v=use.map(q=>q[k]).sort((x,y)=>x-y);return v[v.length>>1]},mr=med(0),mg=med(1),mb=med(2);
+  const R2=R+4;
+  for(let y=Math.max(0,cy-R2);y<=Math.min(h-1,cy+R2);y++)for(let x=Math.max(0,cx-R2);x<=Math.min(w-1,cx+R2);x++){
+    const dd=Math.hypot(x-cx,y-cy);if(dd>R2)continue;const al=dd<=R?1:1-(dd-R)/4,i=(y*w+x)*4;
+    d[i]=d[i]*(1-al)+mr*al;d[i+1]=d[i+1]*(1-al)+mg*al;d[i+2]=d[i+2]*(1-al)+mb*al;P.lum[y*w+x]=.299*d[i]+.587*d[i+1]+.114*d[i+2]}
+}
 let _last=null;
 $("#pcv").addEventListener("pointerdown",e=>{
   if(!P)return;const [x,y]=ppos(e);if(x<0||y<0||x>=P.w||y>=P.h)return;
+  if(P.mode==="heal"){e.target.setPointerCapture(e.pointerId);snap();_last=[x,y];healStamp(x,y);flush();return}
   if(P.mode==="brush"){e.target.setPointerCapture(e.pointerId);snap();_last=[x,y];stamp(x,y);flush();return}
   const o=nearOpen(x,y);if(!o){toast("點在線條上了，請點小格裡面");return}
   const R=P.maxR>=100?0:P.maxR/100*Math.max(P.w,P.h);let done=false,usedClose=P.close,bigger=false;
@@ -898,12 +911,12 @@ $("#pcv").addEventListener("pointerdown",e=>{
   if(usedClose>P.close)toast(`有缺口，已自動把封口加強到 ${usedClose} 再填`);
 });
 $("#pcv").addEventListener("pointermove",e=>{
-  if(!P||P.mode!=="brush"||!_last||!(e.buttons&1))return;const [x,y]=ppos(e),[x0,y0]=_last,n=Math.max(Math.abs(x-x0),Math.abs(y-y0),1);
-  for(let k=1;k<=n;k++)stamp(Math.round(x0+(x-x0)*k/n),Math.round(y0+(y-y0)*k/n));_last=[x,y];flush();
+  if(!P||(P.mode!=="brush"&&P.mode!=="heal")||!_last||!(e.buttons&1))return;const [x,y]=ppos(e),[x0,y0]=_last,n=Math.max(Math.abs(x-x0),Math.abs(y-y0),1),step=P.mode==="heal"?Math.max(2,Math.round(P.brush*.6)):1;
+  for(let k=step;k<=n+step-1;k+=step){const t=Math.min(1,k/n),px=Math.round(x0+(x-x0)*t),py=Math.round(y0+(y-y0)*t);if(P.mode==="heal")healStamp(px,py);else stamp(px,py)}_last=[x,y];flush();
 });
-["pointerup","pointercancel"].forEach(t=>$("#pcv").addEventListener(t,()=>{_last=null}));
-function setMode(m){P.mode=m;$("#mFill").classList.toggle("p",m==="fill");$("#mBrush").classList.toggle("p",m==="brush");$("#pcv").style.cursor=m==="brush"?"cell":"crosshair";$("#pcv").style.touchAction=m==="brush"?"none":"manipulation"}
-$("#mFill").onclick=()=>setMode("fill");$("#mBrush").onclick=()=>setMode("brush");
+["pointerup","pointercancel"].forEach(t=>$("#pcv").addEventListener(t,()=>{if(_last&&P&&P.mode==="heal")recalcBarrier();_last=null}));
+function setMode(m){P.mode=m;$("#mFill").classList.toggle("p",m==="fill");$("#mBrush").classList.toggle("p",m==="brush");$("#mHeal").classList.toggle("p",m==="heal");$("#pcv").style.cursor=m==="fill"?"crosshair":"cell";$("#pcv").style.touchAction=m==="fill"?"manipulation":"none"}
+$("#mFill").onclick=()=>setMode("fill");$("#mBrush").onclick=()=>setMode("brush");$("#mHeal").onclick=()=>{setMode("heal");toast("🩹 去字：用手指或滑鼠把字塗掉，會用旁邊的顏色補起來。字比較大時把「畫筆大小」拉大。塗錯了按「復原」")};
 $("#brushSz").oninput=e=>{P.brush=+e.target.value};
 $("#pzoom").oninput=e=>{$("#pcv").style.width=e.target.value+"%"};
 $("#pMax").oninput=e=>{P.maxR=+e.target.value;$("#pMaxV").textContent=P.maxR>=100?"不限制":P.maxR+"%"};
@@ -1535,19 +1548,25 @@ function cleanName(t){
   return /^(null|none|無|沒有|未知)$/i.test(v)?"":v;
 }
 async function readNames(cards){
-  const max=Math.max(1,Math.min(SAMP_LIM.maxCount||1,8)),out=new Array(cards.length).fill("");
+  const max=Math.max(1,Math.min(SAMP_LIM.maxCount||1,8)),out=new Array(cards.length).fill("");out.types=new Array(cards.length).fill(null);
   _readCtl=new AbortController();
+  const TL=TYPES.join(" "),one=v=>{ // 單張的回覆：{"name":..,"types":[..]}，或舊格式（純文字名字）
+    if(v&&typeof v==="object"&&!Array.isArray(v))return{name:cleanName(v.name),types:cleanTypes(v.types)};
+    return{name:cleanName(v),types:null}};
   for(let st=0;st<cards.length;st+=max){
     const part=cards.slice(st,st+max),n=part.length,blobs=await Promise.all(part.map((m,i)=>nameBlob(origOf(m),n>1?i+1:null)));
-    const prompt=n===1?"這是一張小朋友畫的怪獸卡片的照片。圖上通常會有小朋友手寫的怪獸名字（可能是中文）。請只回覆那個名字，最多 12 個字，不要加任何說明或標點。如果看不到名字，只回覆 NONE。"
-      :`這是 ${n} 張小朋友畫的怪獸卡片的照片，每張左下角有白底紅字的編號 1～${n}（是我加上去的，不是怪獸的名字）。圖上通常有小朋友手寫的怪獸名字（可能是中文）。請依編號順序，只用一個 JSON 陣列回覆，長度必須剛好是 ${n}，每項是該張圖上手寫的名字（字串，最多 12 個字）；看不到名字就填 null。不要加任何說明、不要加程式碼區塊。例如：["獅王",null,"火龍"]`;
+    const fmt=`name 是圖上的怪獸名字（手寫或印刷皆可，最多 12 個字，看不到就填空字串）；types 是圖上有文字標示的屬性，只能從這幾種挑：${TL}，沒有標示就給空陣列，最多 3 個。`;
+    const prompt=n===1?`這是一張小朋友畫的怪獸卡片，或是畫冊上的怪獸圖片。請只用一個 JSON 物件回覆：{"name":"獅王","types":["火"]}。${fmt}不要加任何說明、不要加程式碼區塊。`
+      :`這是 ${n} 張怪獸卡片或畫冊圖片，每張左下角有白底紅字的編號 1～${n}（是我加上去的，不是怪獸的名字）。請依編號順序，只用一個 JSON 陣列回覆，長度必須剛好是 ${n}，每項是 {"name":..,"types":[..]}。${fmt}看不到名字就把 name 填空字串。不要加任何說明、不要加程式碼區塊。例如：[{"name":"獅王","types":["火"]},{"name":"","types":[]}]`;
     const r=await SAMPLE(prompt,{images:blobs,cache:false,signal:_readCtl.signal,modelTier:"default"});
     const t=(r&&r.text)||"";
-    if(n===1)out[st]=cleanName(t);
-    else{const m=t.match(/\[[\s\S]*\]/);if(m){try{const a=JSON.parse(m[0]);if(Array.isArray(a)&&a.length===n)a.forEach((v,i)=>{out[st+i]=cleanName(v)})}catch(e){}}}
+    if(n===1){const m=t.match(/\{[\s\S]*\}/);let v=null;if(m){try{v=one(JSON.parse(m[0]))}catch(e){}}
+      if(!v)v={name:t.trim()==="NONE"?"":cleanName(t),types:null};out[st]=v.name;out.types[st]=v.types}
+    else{const m=t.match(/\[[\s\S]*\]/);if(m){try{const a=JSON.parse(m[0]);if(Array.isArray(a)&&a.length===n)a.forEach((v,i)=>{const o=one(v);out[st+i]=o.name;out.types[st+i]=o.types})}catch(e){}}}
   }
   return out;
 }
+const cleanTypes=a=>Array.isArray(a)?[...new Set(a.map(x=>String(x).trim()).filter(x=>TYPES.includes(x)))].slice(0,3):null;
 async function runReadNames(cards){
   if(!canReadNames()){toast("此環境無法使用 Claude 讀名字");return null}
   toast(`Claude 正在讀 ${cards.length} 張的名字…（可能要 10～60 秒）`,"取消",()=>{_readCtl&&_readCtl.abort()},180000);
@@ -1560,11 +1579,23 @@ async function runReadNames(cards){
     return null}
 }
 function applyNames(cards,names,auto){ // 你已經自己改過的名字不會被蓋掉
-  let n=0;cards.forEach((m,i)=>{const nm=names[i];if(!nm||m.name!==auto[i]||!M.includes(m))return;m.name=nm;n++});save();renderAll();return n;
+  let n=0;cards.forEach((m,i)=>{
+    if(!M.includes(m))return;
+    const nm=names[i];if(nm&&m.name===auto[i]){m.name=nm;n++}
+    const ty=names.types&&names.types[i];
+    if(ty&&ty.length&&m.type===DEFAULT_TYPE&&!(m.types&&m.types.length)){ // 還沒自己改過屬性才套用
+      m.type=ty[0];if(ty.length>1)m.types=ty.slice(1);else delete m.types;
+      if(isAutoSkill(m)){m.skill=TYPE_SKILL[ty[0]].ults[0];delete m.skillCustom}
+    }
+  });save();renderAll();return n;
 }
 $("#readNameBtn").onclick=async()=>{
   if(!editing)return;const out=await runReadNames([editing]);
-  if(out&&out[0]){f_name.value=out[0];toast("Claude 讀到的名字：「"+out[0]+"」（按「儲存」才會套用）")}else if(out)toast("沒有讀到名字，可以手動輸入");
+  if(!out)return;const ty=out.types&&out.types[0];
+  if(ty&&ty.length){f_type.value=ty[0];f_type2.value=ty[1]||"";f_type3.value=ty[2]||"";f_type.dispatchEvent(new Event("change"))}
+  if(out[0]){f_name.value=out[0]}
+  if(out[0]||(ty&&ty.length))toast("Claude 讀到："+(out[0]?"名字「"+out[0]+"」":"")+(ty&&ty.length?(out[0]?"，":"")+"屬性 "+ty.join("、"):"")+"（按「儲存」才會套用）");
+  else toast("沒有讀到名字或屬性，可以手動輸入");
 };
 
 /* ---- 備份檔：把全部卡片存成一個檔案（存在你的裝置／雲端硬碟），之後可匯入還原 ---- */
