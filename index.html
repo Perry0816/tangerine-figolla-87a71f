@@ -1,0 +1,1678 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="怪獸圖鑑">
+<meta name="theme-color" content="#f6f1e7"><link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);-webkit-touch-callout:none}</style>
+<title>怪獸圖鑑工坊</title>
+<style>
+:root{--bg:#f6f1e7;--ink:#2b2622;--mut:#7a7168;--card:#fffdf8;--line:#d9cfbf;--acc:#d9482b;--acc2:#2f6f8f}
+@media (prefers-color-scheme:dark){:root{--bg:#1d1a17;--ink:#efe8dc;--mut:#a39a8e;--card:#2a2622;--line:#443d36;--acc:#ff7a5c;--acc2:#6bb6d6}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+#storeBar,#cloudBar,p.sub[style*="max-width:1200px"]{padding-left:16px!important;padding-right:16px!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
+header{padding:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;max-width:1200px;margin:auto}
+header h1{margin:0;font-size:22px}
+header .sub{color:var(--mut);font-size:14px}
+nav{display:flex;gap:6px;flex-wrap:wrap;padding:0 16px 12px;max-width:1200px;margin:auto}
+nav button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px;border-radius:999px;cursor:pointer;font:inherit}
+nav button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+main{max-width:1200px;margin:auto;padding:0 16px 48px}
+section{display:none}section.on{display:block}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 14px}
+button.b,label.b{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px;border-radius:10px;cursor:pointer;font:inherit;display:inline-block}
+button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 8px;width:100%}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px}
+.cw{container-type:inline-size;position:relative}
+.cw.hs{padding-bottom:30px}
+#grid .cw{content-visibility:auto;contain-intrinsic-size:auto 360px}
+.cw .sel{position:absolute;bottom:2px;left:4px;width:22px;height:22px}
+.cw .del{position:absolute;bottom:0;right:2px;border:1px solid var(--line);background:var(--card);color:#c0392b;border-radius:8px;padding:1px 10px;cursor:pointer;font:inherit;font-size:14px}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:max(18px,env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;display:none;gap:14px;align-items:center;z-index:99;max-width:calc(100% - 32px)}
+#toast button{background:none;border:1px solid currentColor;color:inherit;border-radius:8px;padding:2px 10px;cursor:pointer;font:inherit}
+dialog#cdlg{max-width:380px}
+/* 卡牌 */
+.card{aspect-ratio:63/88;border-radius:5cqw;padding:4cqw;background:linear-gradient(160deg,var(--c1),var(--c2));display:flex;flex-direction:column;gap:2cqw;color:#222;box-shadow:0 2px 8px #0003;cursor:pointer;position:relative;overflow:hidden;font-size:5cqw;line-height:1.25}
+.card .h{display:flex;justify-content:space-between;align-items:center;background:#fffd;border-radius:3cqw;padding:1.5cqw 3cqw}
+.card .n{font-weight:800;font-size:7cqw}
+.card .ts{display:flex;gap:1cqw;flex-shrink:0}.card .ts.n2 .t,.card .ts.n3 .t{font-size:3.6cqw;padding:0 2cqw}.card .n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.card .t{font-size:4.5cqw;background:#222;color:#fff;border-radius:99px;padding:0 3cqw}
+.card .im{flex:1;min-height:0;background:#fff;border-radius:3cqw;border:.8cqw solid #222;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.card .im img{max-width:100%;max-height:100%;object-fit:contain;mix-blend-mode:multiply}
+.card .sk{background:#fffd;border-radius:3cqw;padding:1.5cqw 3cqw}
+.card .sk b{font-size:5.5cqw}.card .sk small{display:block;font-size:4cqw;color:#444;min-height:1.2em}
+.card .st{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5cqw;text-align:center;font-weight:700;font-size:4.5cqw}
+.card .st span{background:#222;color:#fff;border-radius:2cqw;padding:1cqw 0}
+.card .f{display:flex;justify-content:space-between;font-size:4cqw;font-weight:700}
+.card .rar{position:absolute;top:2.5cqw;right:2.5cqw;font-size:4cqw;font-weight:900;background:#222;color:#ffd84a;border-radius:2cqw;padding:0 2cqw;display:none}
+.rN{--c1:#cfd4d8;--c2:#a9b1b8}.rR{--c1:#9fd0ee;--c2:#5aa3d6}.rSR{--c1:#d9b4f0;--c2:#9a63cc}.rSSR{--c1:#ffe27a;--c2:#f0a02a}.rUR{--c1:#ff9a8a;--c2:#d9302b}
+/* 動畫 */
+.card .im img{transform-origin:50% 100%;animation:breathe 3.2s ease-in-out infinite;animation-delay:var(--d,0s)}
+.card .im img.a1{animation-name:sway}.card .im img.a2{animation-name:hop}
+@keyframes breathe{50%{transform:scale(1.03,1.07)}}
+@keyframes sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+@keyframes hop{0%,100%{transform:translateY(0)}50%{transform:translateY(-7%)}}
+body.noanim .card .im img{animation:none}
+@media(prefers-reduced-motion:reduce){.card .im img{animation:none}}
+.lungeL{animation:lungeL .45s}.lungeR{animation:lungeR .45s}
+@keyframes lungeL{40%{transform:translateX(35%) scale(1.06)}}
+@keyframes lungeR{40%{transform:translateX(-35%) scale(1.06)}}
+.hit{animation:hit .4s}
+@keyframes hit{0%,60%{filter:brightness(2.2) saturate(.3)}25%{transform:translateX(-6px)}50%{transform:translateX(6px)}}
+.ko .card{filter:grayscale(1);opacity:.55;transform:rotate(8deg) translateY(6%);transition:all .6s}
+.ko .card .im img{animation:none}
+dialog#pdlg{max-width:680px;max-height:96vh;max-height:96dvh;overflow:hidden;padding:12px}
+dialog#pdlg[open]{display:flex;flex-direction:column}
+#pwrap{flex:1 1 auto;min-height:150px;overflow:auto;border:1px solid var(--line);border-radius:8px;background:#fff;-webkit-overflow-scrolling:touch}
+#pTop{position:sticky;top:0;z-index:2;background:var(--bg);padding-bottom:6px;margin:0 0 6px}
+#pcv{max-width:100%;max-height:60vh;border:1px solid var(--line);border-radius:8px;cursor:crosshair;background:#fff}
+.sw{width:34px;height:34px;border-radius:50%;border:3px solid var(--line);cursor:pointer;padding:0}.sw.on{border-color:var(--ink)}
+/* 張嘴 */
+.card .im{container-type:size}
+.card .im .mw,.pv .mw{position:relative;width:min(100cqw,calc(100cqh*var(--ar)));height:min(100cqh,calc(100cqw/var(--ar)));transform-origin:50% 100%;animation:breathe 3.2s ease-in-out infinite;animation-delay:var(--d,0s)}
+.mw.a1{animation-name:sway!important}.mw.a2{animation-name:hop!important}
+.card .im .mw img,.pv .mw img{position:absolute;inset:0;width:100%;height:100%;max-width:none;max-height:none;object-fit:fill;animation:none;mix-blend-mode:multiply}
+.mw .mi{position:absolute;inset:0;background:#5a1428;opacity:0;animation:chompI 3.2s ease-in-out infinite;animation-delay:var(--d,0s)}
+.card .im .mw img.jaw,.pv .mw img.jaw{animation:chomp 3.2s ease-in-out infinite;animation-delay:var(--d,0s)}
+@keyframes chomp{0%,48%,100%{transform:none}62%,80%{transform:translate(var(--tx),var(--ty)) rotate(var(--ang))}}
+@keyframes chompI{0%,48%,100%{opacity:0}62%,80%{opacity:1}}
+.card .im .mw.bite img.jaw{animation:biteJ .5s}.mw.bite .mi{animation:biteI .5s}
+@keyframes biteJ{0%,100%{transform:none}35%,65%{transform:translate(calc(var(--tx)*1.4),calc(var(--ty)*1.4)) rotate(calc(var(--ang)*1.4))}}
+@keyframes biteI{0%,100%{opacity:0}35%,65%{opacity:1}}
+body.noanim .mw,body.noanim .mw .mi,body.noanim .card .im .mw img.jaw{animation:none!important}
+.pv{width:260px;height:260px;container-type:size;display:flex;align-items:center;justify-content:center;background:#fff;border:2px solid var(--ink);border-radius:10px}
+dialog#mdlg{max-width:760px}
+#mcv{max-width:100%;max-height:55vh;border:1px solid var(--line);border-radius:8px;cursor:crosshair;background:#fff}
+/* 對戰 */
+.arena{display:grid;grid-template-columns:1fr 60px 1fr;gap:12px;align-items:center;max-width:760px}
+.arena .vs{text-align:center;font-weight:900;font-size:26px;color:var(--acc)}
+.hp{height:12px;background:var(--line);border-radius:99px;overflow:hidden;margin-top:6px}
+.hp i{display:block;height:100%;background:#3aa655;transition:width .5s}
+.log{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px;max-width:760px;max-height:260px;overflow:auto;margin-top:14px;font-size:15px}
+.log p{margin:2px 0}.log .k{color:var(--acc);font-weight:700}
+/* v2 舞台 */
+#stage{position:relative;width:100%;max-width:980px;aspect-ratio:16/9;container-type:size;border-radius:14px;overflow:hidden;background:#222;border:2px solid var(--ink)}
+#stage canvas{position:absolute;inset:0;width:100%;height:100%}
+#fxc{pointer-events:none}
+.fx{position:absolute;bottom:8%;width:36cqw;display:flex;flex-direction:column;align-items:center;gap:1cqw}
+.fx.L{left:5%}.fx.R{right:5%}
+.fx::after{content:"";position:absolute;bottom:-1.2cqw;width:26cqw;height:3cqw;border-radius:50%;background:radial-gradient(#0008,#0000 70%);z-index:-1}
+.fx .tag{background:#000b;color:#fff;border-radius:99px;padding:.3cqw 2.2cqw;font-weight:800;font-size:2.4cqw;white-space:nowrap}
+.fx .hpb{width:72%;height:1.7cqw;background:#0009;border-radius:99px;overflow:hidden;border:.25cqw solid #fffa}
+.fx .hpb i{display:block;height:100%;width:100%;background:linear-gradient(#8bff98,#2fbf4b);transition:width .45s,background .3s}
+.fx .im{width:34cqw;height:30cqw;container-type:size;display:flex;align-items:flex-end;justify-content:center;filter:drop-shadow(0 0 .25cqw #fffc) drop-shadow(0 1cqw 1cqw #0007)}
+.fx.flip .im{transform:scaleX(-1)}
+.fx .im>img.spr{max-width:100%;max-height:100%;object-fit:contain;transform-origin:50% 100%;animation:breathe 3.2s ease-in-out infinite}
+.fx .mw{position:relative;width:min(100cqw,calc(100cqh*var(--ar)));height:min(100cqh,calc(100cqw/var(--ar)));transform-origin:50% 100%;animation:breathe 3.2s ease-in-out infinite;animation-delay:var(--d,0s)}
+.fx .mw img{position:absolute;inset:0;width:100%;height:100%;max-width:none;max-height:none;object-fit:fill}
+.fx .mw img.jaw{animation:chomp 3.2s ease-in-out infinite;animation-delay:var(--d,0s)}
+.fx .mw.bite img.jaw{animation:biteJ .5s}
+.dmg{position:absolute;font-weight:900;font-size:5cqw;color:#fff;text-shadow:0 0 .8cqw #000,.2cqw .2cqw 0 #000,-.2cqw -.2cqw 0 #000;pointer-events:none;white-space:nowrap}
+.dmg.crit{font-size:8cqw;color:#ffd84a}
+.ring{position:absolute;border-radius:50%;border:.8cqw solid #fff;pointer-events:none}
+#banner{position:absolute;left:0;right:0;top:30%;text-align:center;font-weight:900;font-size:8.5cqw;color:#fff;text-shadow:0 0 1.2cqw #f60,.4cqw .4cqw 0 #000,-.3cqw -.3cqw 0 #000;opacity:0;pointer-events:none;letter-spacing:.2cqw}
+#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
+#mvboard{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:980px;margin-top:12px}
+#mvboard .panel{margin:0}
+#mvboard .panel.active{outline:3px solid var(--acc);outline-offset:-1px}
+@media(max-width:700px){#mvboard{grid-template-columns:1fr}}
+.mvgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.mv{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 10px;cursor:pointer;font:inherit;text-align:left;display:flex;flex-direction:column;gap:2px}
+.mv b{font-size:15px}.mv small{color:var(--mut);font-size:12px}.mv i{font-style:normal;font-size:12px;color:var(--mut)}
+.mv:disabled{opacity:.45;cursor:not-allowed}.mv:not(:disabled):hover{border-color:var(--acc);transform:translateY(-1px)}
+.mv .k{align-self:flex-end;font-size:11px;border:1px solid var(--line);border-radius:5px;padding:0 5px;color:var(--mut)}
+.mv.kindA{border-left:4px solid #e6342a}.mv.kindS{border-left:4px solid #3aa0ff}.mv.kindH{border-left:4px solid #3aa655}
+.fx .stt{margin-left:1cqw}
+.fx.charged .im{filter:drop-shadow(0 0 1.4cqw #ffd23f) drop-shadow(0 0 .3cqw #fff)}
+.fx.guarding .im{filter:drop-shadow(0 0 1.4cqw #4ea8de) drop-shadow(0 0 .3cqw #fff)}
+body.clear #dex .card{background:transparent!important;box-shadow:none}
+body.clear #dex .card .h,body.clear #dex .card .sk{background:#0000;color:var(--ink)}
+body.clear #dex .card .sk small{color:var(--mut)}
+body.clear #dex .card .im{background:transparent}
+body.clear #dex .card .im img{mix-blend-mode:normal;filter:drop-shadow(0 0 2px #fff9)}
+body.clear #dex .card .st span{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+body.clear #dex .card .f{color:var(--ink)}
+body.clear #dex .card .t{background:var(--ink);color:var(--bg)}
+.shake{animation:sh .3s}@keyframes sh{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+.panel h3{margin:0 0 6px;font-size:17px}
+.tag{font-size:12px;border-radius:6px;padding:1px 6px;background:var(--line);margin-left:4px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:560px){.two{grid-template-columns:1fr}.arena{grid-template-columns:1fr}.arena .vs{display:none}}
+canvas#cv{max-width:100%;border:1px solid var(--line);border-radius:8px;touch-action:none;background:#fff;cursor:crosshair}
+dialog{border:1px solid var(--line);border-radius:14px;background:var(--bg);color:var(--ink);max-width:560px;width:calc(100% - 24px);padding:16px}
+dialog::backdrop{background:#0007}
+.rank li{margin:2px 0}
+/* 列印 */
+#sheet{display:none}
+@media print{
+  body{background:#fff}header,nav,main,dialog{display:none!important}
+  #sheet{display:grid;grid-template-columns:repeat(3,63mm);gap:2mm;justify-content:center;padding:6mm 0}
+  #sheet .cw{width:63mm;height:88mm;break-inside:avoid}
+  #sheet .card{box-shadow:none;border:.3mm solid #222;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  @page{size:A4;margin:5mm}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>🐉 怪獸圖鑑工坊</h1>
+  <span class="sub">把小朋友的塗鴉變成卡牌、對戰、可印可送的作品集 · <span id="buildTag">v2 · 更新 11/21 · 雲端保存</span></span>
+</header>
+<p class="sub" style="max-width:1200px;margin:0 auto 10px;padding:0 0 0 0">🔒 隱私：你上傳的照片只在這台裝置的瀏覽器裡處理與保存，別人也看不到。換裝置或清除網站資料後會消失。<b>唯一的例外</b>：你勾選「🤖 讓 Claude 讀照片上的名字」並按下「轉成卡片」（或在編輯視窗按「讓 Claude 讀名字」）時，被框選的卡片圖會送給 Claude 辨識名字；第一次會先問你同意，不勾就完全不會送出。</p>
+<div id="storeBar" class="sub" style="max-width:1200px;margin:0 auto 10px"></div>
+<div id="cloudBar" class="sub" style="max-width:1200px;margin:0 auto 10px"></div>
+<nav id="nav">
+  <button data-t="dex" class="on">圖鑑</button>
+  <button data-t="battle">對戰</button>
+  <button data-t="add">📷 拍照轉卡片</button>
+  <button data-t="print">列印卡牌</button>
+</nav>
+<main>
+
+<section id="dex" class="on">
+  <div class="bar">
+    <input id="q" placeholder="搜尋名稱／屬性" style="max-width:220px">
+    <select id="sortBy" style="max-width:150px"><option value="cp">依戰力</option><option value="wins">依勝場</option><option value="new">依新增</option></select>
+    <button class="b" id="selAll">全選</button>
+    <button class="b" id="selNone">取消選取</button>
+    <button class="b" id="nameSel">🎲 選取卡片隨機取名</button>
+    <button class="b" id="colSel">🎨 隨機換色（選取；未選＝全部）</button>
+    <button class="b" id="delSel" style="color:#c0392b">🗑 刪除選取</button>
+    <button class="b" id="exp">匯出資料</button>
+    <label class="b">匯入資料<input id="imp" type="file" accept=".json" hidden></label>
+    <button class="b" id="clearT">卡面：完整</button>
+    <button class="b" id="animT">動畫：開</button>
+    <button class="b" id="rpBtn">↩ 還原上一次存檔</button>
+    <button class="b" id="bkSave">⬇️ 下載備份檔</button>
+    <button class="b" id="bkLoad">⬆️ 匯入備份檔</button><input type="file" id="bkFile" accept=".json,application/json" hidden>
+    <button class="b" id="reset">還原範例</button>
+    <button class="b" id="wipe" style="color:#c0392b">🧹 清除我的所有資料</button>
+    <span class="sub" id="cnt"></span>
+  </div>
+  <div class="grid" id="grid"></div>
+</section>
+
+<section id="battle">
+  <div class="bar">
+    <select id="selA" style="max-width:200px"></select>
+    <select id="selB" style="max-width:200px"></select>
+    <button class="b" id="rnd">🎲 隨機</button>
+    <button class="b" id="flipA">↔ 翻轉左</button><button class="b" id="flipB">↔ 翻轉右</button>
+    <label>左方 <select id="ctlL" style="width:auto"><option value="p">玩家</option><option value="c">電腦</option></select></label>
+    <label>右方 <select id="ctlR" style="width:auto"><option value="p" selected>玩家</option><option value="c">電腦</option></select></label>
+    <button class="b p" id="fight">⚔ 開打</button>
+  </div>
+  <div class="bar">
+    <label>場景 <select id="stageSel" style="width:auto"><option value="meadow">草原</option><option value="sea">海底</option><option value="volcano">火山</option><option value="city">夜城</option><option value="desert">沙漠</option><option value="custom">自訂圖片</option></select></label>
+    <label class="b">🖼 上傳背景圖<input id="bgFile" type="file" accept="image/*" hidden></label>
+    <label>音樂 <select id="musSel" style="width:auto"><option value="synth">內建（依場景）</option><option value="custom">自訂音樂</option><option value="off">關閉</option></select></label>
+    <label class="b">🎵 上傳音樂<input id="musFile" type="file" accept="audio/*" hidden></label>
+    <button class="b" id="musBtn">▶ 音樂</button>
+  </div>
+  <div class="bar">
+    <label>音量 <input id="vol" type="range" min="0" max="100" value="60" style="width:110px;vertical-align:middle"></label>
+    <label><input type="checkbox" id="sfxOn" checked style="width:auto;vertical-align:middle"> 音效</label>
+    <button class="b" id="sfxTest">🔊 試聽音效</button>
+  </div>
+  <div id="stage"><canvas id="bgc"></canvas><div id="fgt"></div><canvas id="fxc"></canvas><div id="banner"></div><div id="flash"></div></div>
+  <div id="mvboard">
+    <div class="panel" id="mvpL"><h3 id="mvtL" style="font-size:16px"></h3><div class="mvgrid" id="mvsL"></div></div>
+    <div class="panel" id="mvpR"><h3 id="mvtR" style="font-size:16px"></h3><div class="mvgrid" id="mvsR"></div></div>
+  </div>
+  <audio id="musEl" loop></audio>
+  <div class="log" id="log"><p>選兩隻怪獸，按「開打」。左右兩方可分別設為「玩家」或「電腦」；輪到玩家時，用下方招式按鈕（或鍵盤 1～7）選招。預設兩隻輪流點招；其中一方設「電腦」就變成人機對戰，兩方都設「電腦」就是自動對戰。若怪獸朝向不對，按「翻轉」。</p></div>
+  <div class="panel" style="margin-top:14px;max-width:760px"><h3>🏆 勝場排行</h3><ol class="rank" id="rank"></ol></div>
+</section>
+
+<section id="add">
+  <div class="panel"><h3>📷 拍照轉卡片</h3>
+    <div class="bar">
+      <label class="b p">📷 拍照<input id="cam" type="file" accept="image/*" capture="environment" hidden></label>
+      <label class="b">🖼 從相簿選照片<input id="file" type="file" accept="image/*" hidden></label>
+      <label class="b"><input type="checkbox" id="clean" checked style="width:auto;vertical-align:middle"> 自動去陰影、變白底</label>
+      <label class="b"><input type="checkbox" id="rname" checked style="width:auto;vertical-align:middle"> 自動隨機取名</label>
+      <label class="b" id="readnameWrap" hidden><input type="checkbox" id="readname" checked style="width:auto;vertical-align:middle"> 🤖 讓 Claude 讀照片上的名字</label>
+      <span class="sub" id="readnameHint"></span>
+      <label class="b"><input type="checkbox" id="acolor" style="width:auto;vertical-align:middle"> 自動上色</label>
+      <input id="author" placeholder="作者暱稱（選填）" style="max-width:180px">
+    </div>
+    <div class="bar">
+      <button class="b" id="redet">重新偵測</button>
+      <button class="b" id="whole">整張當一隻</button>
+      <button class="b" id="clearBox">清除所有框</button>
+      <button class="b p" id="crop">轉成卡片（0 隻）</button>
+      <span class="sub" id="cropHint">尚未選照片</span>
+    </div>
+    <canvas id="cv" width="10" height="10"></canvas>
+  </div>
+  <div class="panel"><h3>怎麼用</h3>
+    <p class="sub">1. 拍照或選照片，程式會自動框出每一隻怪獸。<br>
+    2. <b>點框</b>可取消或選取；在空白處<b>拖曳</b>可以自己畫框。<br>
+    3. 按「轉成卡片」，卡片會加到圖鑑最前面，數值是隨機的，可以再改。<br>
+    拍照小技巧：光線均勻、紙放平、鏡頭正對、一次拍一頁；怪獸之間留點空白，自動框選會比較準。<br>
+    照片只在這台裝置的瀏覽器處理，不會上傳。<br>例外：勾選「🤖 讓 Claude 讀照片上的名字」並按「轉成卡片」時，被框選的那幾張卡片圖會送給 Claude 辨識名字（第一次會跳出同意視窗，用的是你自己的 Claude 用量）；不勾就完全不會送出。</p></div>
+</section>
+
+<section id="print">
+  <div class="bar">
+    <button class="b p" id="doPrint">列印（A4，一頁 9 張，63×88mm 標準卡牌尺寸）</button>
+    <span class="sub" id="pcnt"></span>
+  </div>
+  <p class="sub">沒有在圖鑑勾選時，列印全部。建議用 200–250g 相片紙或磅數較高的紙，裁切後可護套。</p>
+  <div class="grid" id="pprev"></div>
+</section>
+
+
+</main>
+<div id="sheet"></div>
+
+<dialog id="dlg">
+  <form method="dialog" id="frm">
+    <img id="editPrev" alt="" style="height:96px;max-width:40%;object-fit:contain;float:right;margin:0 0 6px 10px;border:1px solid var(--line);border-radius:8px;background:#fff">
+    <div class="two">
+      <div><label>名稱<input id="f_name"></label></div>
+      <div><label>屬性 1（主屬性，決定必殺技）<select id="f_type"></select></label></div>
+      <div><label>屬性 2（可不選）<select id="f_type2"></select></label></div>
+      <div><label>屬性 3（可不選）<select id="f_type3"></select></label></div>
+      <div><label>HP<input id="f_hp" type="number" min="1"></label></div>
+      <div><label>攻擊<input id="f_atk" type="number" min="1"></label></div>
+      <div><label>防禦<input id="f_def" type="number" min="0"></label></div>
+      <div><label>速度<input id="f_spd" type="number" min="1"></label></div>
+      <div><label>必殺技<input id="f_skill"></label></div>
+      <div><label>作者（暱稱就好）<input id="f_by"></label></div>
+    </div>
+    <label>怪獸小故事<textarea id="f_story" rows="2"></textarea></label>
+    <details style="margin-top:8px"><summary style="cursor:pointer;font-weight:700">⚔ 自訂招式名稱（對戰時顯示；留空就用預設）</summary>
+      <p class="sub" style="margin:6px 0">「必殺技」名稱請在上面的「必殺技」欄修改。</p>
+      <div class="two" id="mvNames"></div>
+      <button class="b" type="button" id="mvNamesReset" style="margin-top:6px">還原預設招式名稱</button>
+    </details>
+    <div class="bar" style="margin-top:12px">
+      <button class="b p" value="save" id="save">儲存</button>
+      <button class="b" type="button" id="rcolBtn">🎨 隨機換色</button>
+      <button class="b" type="button" id="readNameBtn" hidden>🤖 讓 Claude 讀名字</button>
+      <button class="b" type="button" id="rnameBtn">🎲 隨機取名</button>
+      <button class="b" type="button" id="rskillBtn">🎲 隨機技能</button>
+      <button class="b" type="button" id="mouthBtn">🦷 張嘴設定</button>
+      <button class="b" type="button" id="paintBtn">🎨 上色</button>
+      <button class="b" type="button" id="reroll">🎲 重骰數值</button>
+      <button class="b" type="button" id="del" style="color:#c0392b">刪除</button>
+      <button class="b" value="cancel" formnovalidate>關閉</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="pdlg">
+  <div class="bar" id="pTop">
+    <button class="b p" id="pdone">✅ 完成並儲存</button>
+    <button class="b" id="pundo">↩ 復原</button>
+    <button class="b" id="pauto">✨ 自動上色</button>
+    <button class="b" id="pbase">還原原圖</button>
+    <button class="b" id="pcancel">取消</button>
+  </div>
+  <div class="bar" id="pal"></div>
+  <div class="bar">
+    <button class="b p" id="mFill">🪣 填色區塊</button><button class="b" id="mBrush">🖌 畫筆</button>
+    <label class="b">自訂色<input type="color" id="pcol" value="#e63946" style="width:36px;height:22px;padding:0;border:0;vertical-align:middle"></label>
+    <label>畫筆大小 <input id="brushSz" type="range" min="2" max="30" value="8" style="width:80px;vertical-align:middle"></label>
+    <label>放大 <input id="pzoom" type="range" min="100" max="400" value="100" style="width:80px;vertical-align:middle"></label>
+  </div>
+  <details id="pAdv"><summary class="sub" style="cursor:pointer">進階設定（顏色漏到隔壁時再調）</summary>
+    <div class="bar" style="margin-top:6px">
+      <label>封口強度 <input id="pClose" type="range" min="0" max="6" value="2" style="width:80px;vertical-align:middle"> <b id="pCloseV">2</b></label>
+      <label>線條靈敏度 <input id="pTv" type="range" min="60" max="95" value="80" style="width:80px;vertical-align:middle"> <b id="pTvV">80</b></label>
+      <label>最大填色範圍 <input id="pMax" type="range" min="3" max="100" value="20" style="width:80px;vertical-align:middle"> <b id="pMaxV">20%</b></label>
+    </div>
+  </details>
+  <p class="sub" style="margin:4px 0">🪣 點一個小格就只填那一格；有缺口時程式會自動補縫。仍然漏就改用 🖌 畫筆。記得按上面的「✅ 完成並儲存」。</p>
+  <div id="pwrap"><canvas id="pcv" style="display:block;width:100%;max-height:none;border:0;border-radius:0"></canvas></div>
+</dialog>
+<dialog id="mdlg">
+  <p class="sub" style="margin-top:0"><b id="mstep">依序點三個點：①嘴巴後方（嘴角、鉸鏈）→ ②嘴巴前端 → ③下巴最低處。</b><br>側面的嘴選「轉動」，正面臉選「下移」。</p>
+  <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start">
+    <canvas id="mcv"></canvas>
+    <div><div class="pv" id="mprev"></div>
+      <div class="bar" style="margin-top:8px"><label><input type="radio" name="mmode" value="rotate" checked style="width:auto"> 轉動</label><label><input type="radio" name="mmode" value="drop" style="width:auto"> 下移</label></div>
+      <label>張開幅度<input type="range" id="mamt" min="5" max="45" value="20"></label></div>
+  </div>
+  <div class="bar" style="margin-top:10px">
+    <button class="b" id="mreset">重點</button>
+    <button class="b" id="mclear" style="color:#c0392b">移除張嘴</button>
+    <button class="b p" id="mdone">完成</button>
+    <button class="b" id="mcancel">取消</button>
+  </div>
+</dialog>
+<dialog id="rdlg"><h3 style="margin-top:0">↩ 還原上一次存檔</h3>
+  <p class="sub">每次存檔前，會自動保留上一個狀態（最多 3 個）。還原之後，「還原前」的狀態也會變成還原點，可以再切回來。還原點只存在這個瀏覽器裡。</p>
+  <div id="rlist"></div>
+  <div class="bar" style="margin-top:10px"><button class="b" id="rclose">關閉</button></div></dialog>
+<dialog id="cdlg"><p id="cmsg" style="margin-top:0"></p>
+  <div class="bar"><button class="b" id="cno">取消</button><button class="b p" id="cyes" style="background:#c0392b;border-color:#c0392b">確定刪除</button></div></dialog>
+<div id="toast"><span id="tmsg"></span><button id="tact" hidden></button></div>
+<script src="samples.js"></script>
+<script src="colored.js"></script>
+<script src="extra.js"></script>
+<script>
+"use strict";
+const LS={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v);return true}catch(e){return false}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+const KEY="monster_cards_v1";
+const TYPES=["草","水","火","冰","幽靈","蟲","一般","電","地面","岩石","超能力","毒","格鬥","鋼","惡","龍","妖精","飛行"];
+const DEFAULT_TYPE="草",TV=3; // 預設屬性＝草；TV 是屬性資料版本（TV 變動時會把全部卡片重設一次為預設屬性）
+/* 技能跟著屬性走：每個屬性有自己的「屬性技」與 3 個「必殺技」候選（第 1 個是預設） */
+const TYPE_SKILL={
+ 草:{elem:"藤鞭",ults:["森林之怒","萬葉斬","大地回春"]},
+ 水:{elem:"水之砲",ults:["怒濤吞噬","海嘯","深海重壓"]},
+ 火:{elem:"火焰衝擊",ults:["爆炎烈焚","烈火焚天","赤焰風暴"]},
+ 冰:{elem:"冰凍光線",ults:["暴風雪","絕對零度","冰刃亂舞"]},
+ 幽靈:{elem:"暗影球",ults:["幽冥索命","鬼影重重","靈魂震擊"]},
+ 蟲:{elem:"蟲鳴",ults:["蟲群風暴","絲網纏繞","群蟲啃噬"]},
+ 一般:{elem:"猛撞",ults:["全力一擊","泰山壓頂","野性爆發"]},
+ 電:{elem:"閃電鞭",ults:["雷霆萬鈞","電光火石","天降落雷"]},
+ 地面:{elem:"地裂",ults:["大地震","流沙陷阱","泥石流"]},
+ 岩石:{elem:"岩崩",ults:["隕石墜落","巨岩壓頂","山崩地裂"]},
+ 超能力:{elem:"念力",ults:["精神衝擊","心靈風暴","星界之力"]},
+ 毒:{elem:"毒針",ults:["劇毒爆發","腐蝕毒霧","毒牙突襲"]},
+ 格鬥:{elem:"連環拳",ults:["必殺重拳","連環猛拳","破空飛踢"]},
+ 鋼:{elem:"鋼翼",ults:["鋼鐵風暴","金屬爆裂","鐵壁重擊"]},
+ 惡:{elem:"咬碎",ults:["暗夜突襲","惡意襲擊","黑暗衝擊"]},
+ 龍:{elem:"龍息",ults:["龍之怒","龍魂爆發","天龍降臨"]},
+ 妖精:{elem:"魔法閃耀",ults:["月華之光","星塵爆裂","夢幻魔法"]},
+ 飛行:{elem:"啄擊",ults:["俯衝猛襲","颶風之翼","天空審判"]}
+};
+const ALL_ULTS=new Set(Object.values(TYPE_SKILL).flatMap(t=>t.ults));
+/* 一隻怪獸最多 3 個屬性：m.type 是第 1 屬性（相容舊資料），m.types 才有第 2、3 屬性 */
+function typesOf(m){const t=(m.types&&m.types.length?m.types:[m.type]).filter((x,i,a)=>TYPES.includes(x)&&a.indexOf(x)===i).slice(0,3);return t.length?t:["一般"]}
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ---- 範例資料：由小朋友的兩張圖裁切而來 ---- */
+const SEED=[
+["snail","刺刺蝸牛王","地",420,60,90,15,"尖刺旋殼"],["croc","鋸齒鱷","水",600,85,70,30,"死亡翻滾"],
+["moose","怒角麋鹿","森",520,75,55,60,"雷霆角擊"],["horsepig","野豬戰馬","地",480,80,50,70,"衝撞蹄"],
+["cat","狂爪貓怪","暗",400,90,35,85,"雙爪亂舞"],["panda","竹棍熊貓","武",560,70,80,40,"竹棍旋風"],
+["octo1","章魚博士","水",380,65,40,55,"八爪抓取"],["octo2","深淵章魚","水",650,95,60,35,"吸噬大口"],
+["fish1","條紋魚","水",300,50,45,80,"條紋衝刺"],["fish2","鯊尾魚","水",340,70,40,90,"尾鰭切割"],
+["multieye","千眼獸","暗",500,80,65,45,"千眼凝視"],["bull","獠牙牛魔","地",700,100,85,25,"獠牙衝撞"],
+["frog","長舌蛙","森",360,70,40,65,"長舌捲擊"],["wolf","月夜狼","暗",450,88,50,92,"月下長嚎"],
+["bat","蝙蝠蛇","暗",380,78,45,88,"夜襲吸血"],["lion","獅王","火",720,98,75,60,"獅吼震天"],
+["gorilla","五萬金剛","力",2000,300,150,40,"巨柱粉碎",50000,"圖上寫著 50000 戰力，所以牠就是 50000。"],
+["swordshark","劍吻鯊","水",420,92,50,95,"穿刺突擊"],["turtle","巨殼龜","水",800,60,120,15,"鐵殼防禦"],
+["cobra","骷髏眼鏡蛇","毒",460,85,55,70,"劇毒噬咬"],["skullelephant","骷髏象王","暗",950,105,100,30,"亡靈鼻擊"],
+["whale","鯨鯊魔","水",900,110,80,40,"深海吞噬"],["croc2","戰爪鱷","水",680,90,85,35,"巨鉗鎖喉"],
+["shark","血牙鯊","水",640,105,60,75,"血牙狂噬"],["longcroc","長尾鼠鱷","水",580,88,65,60,"長尾橫掃"],
+["birdbeast","翼狼騎豬","風",520,92,55,85,"雙翼俯衝"]
+];
+const seedList=()=>SEED.map(([id,name,type,hp,atk,def,spd,skill,cp,story],i)=>
+  ({id,src:(window.SAMPLES&&SAMPLES[id])||`samples/${id}.jpg`,name,type,hp,atk,def,spd,skill,story:story||"",by:"小畫家",wins:0,cp:cp||null,t:i,mouth:MOUTH[id]||undefined}));
+
+const MOUTH={
+ shark:{h:[.30,.62],t:[.08,.66],c:[.14,.88],mode:"rotate",amt:12,ar:1.809},
+ whale:{h:[.46,.80],t:[.20,.80],c:[.30,.92],mode:"rotate",amt:12,ar:1.265},
+ croc2:{h:[.27,.52],t:[.07,.82],c:[.12,.93],mode:"rotate",amt:10,ar:2.275},
+ lion:{h:[.41,.575],t:[.58,.575],c:[.50,.625],mode:"drop",amt:5,ar:1.003}
+};
+const MAX_CARDS=1000; // 原 localStorage 實測約 148 張；改用 IndexedDB 後上限 1000 張（需求至少 500）
+let M=[];
+const origOf=m=>m.orig==="@s"?((window.SAMPLES&&SAMPLES[m.id])||m.src):(m.orig||m.src);
+const SEED_SKILL=Object.fromEntries(SEED.map(x=>[x[0],x[7]]));
+let _oldSk=null;
+function isAutoSkill(m){const k=(m.skill||"").trim();if(!_oldSk)_oldSk=new RegExp("^("+Object.values(SK1).flat().join("|")+")("+SK2.join("|")+")$");return !k||k===SEED_SKILL[m.id]||k==="必殺撞擊"||k==="撞擊"||_oldSk.test(k)||ALL_ULTS.has(k)}
+function postLoad(){
+  // 從 v1 搬來的 17 張卡片：只加入一次，之後刪除會保持刪除
+  try{if(window.EXTRA_CARDS&&LS.get("mc_extra")!=="1"){EXTRA_CARDS.forEach(c=>{if(!M.some(m=>m.id===c.id)&&M.length<MAX_CARDS)M.push({...c})});LS.set("mc_extra","1")}}catch(e){}
+  M.forEach(m=>{
+    if(m.src&&m.src.startsWith('samples/')&&window.SAMPLES&&SAMPLES[m.id])m.src=SAMPLES[m.id];
+    // 不使用預設上色。若卡片仍是舊版自動套上的預設色，還原成原圖
+    if(window.SAMPLES_COLOR&&SAMPLES_COLOR[m.id]&&window.SAMPLES&&m.src===SAMPLES_COLOR[m.id]){m.src=SAMPLES[m.id];delete m.orig}
+    if(m.mouth===undefined&&MOUTH[m.id])m.mouth=MOUTH[m.id];
+    if(m.id==="lion"&&m.mouth&&m.mouth.h&&m.mouth.h[1]===.64)m.mouth=MOUTH.lion; // 修正舊版獅王嘴巴位置
+    if(m.tv!==TV){ // 預設屬性：全部設為草（只執行一次；之後屬性由你自己在編輯視窗調整）
+      m.type=DEFAULT_TYPE;delete m.types;m.tv=TV;
+      if(isAutoSkill(m)){m.skill=TYPE_SKILL[DEFAULT_TYPE].ults[0];delete m.skillCustom}else m.skillCustom=true; // 自己改過的必殺技名稱保留
+    }
+  });
+}
+let _db=null,_busy=false,_again=false,_dirty=false;
+function dbOpen(){return new Promise(res=>{try{const rq=indexedDB.open("monster_cards_db",2);
+  rq.onupgradeneeded=()=>{const d=rq.result;if(!d.objectStoreNames.contains("cards"))d.createObjectStore("cards",{keyPath:"id"});if(!d.objectStoreNames.contains("backup"))d.createObjectStore("backup",{keyPath:"id"})};
+  rq.onsuccess=()=>res(rq.result);rq.onerror=()=>res(null);rq.onblocked=()=>res(null)}catch(e){res(null)}})}
+const dbAll=db=>new Promise(res=>{try{const r=db.transaction("cards").objectStore("cards").getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>res(null)}catch(e){res(null)}});
+function save(){_dirty=true;if(!(typeof CLOUD!=="undefined"&&CLOUD.adopting))LS.set("mc_unsynced","1");kickSave()}
+async function kickSave(){if(_busy){_again=true;return}_busy=true;try{do{_again=false;await persist()}while(_again)}finally{_busy=false;_dirty=false}}
+const STORE={ok:null,time:0,n:0,msg:"",persisted:null,detail:""};
+function storeBar(){
+  const el=$("#storeBar");if(!el)return;
+  const btn=` <button class="b" id="storeCheck" style="padding:2px 10px;font-size:13px">🔍 檢查儲存</button>`;
+  if(STORE.ok===false){
+    el.innerHTML=`<div class="panel" style="border-color:#c0392b;margin:0"><b style="color:#c0392b">⚠️ 這個瀏覽器環境沒有保存你的資料</b>：重新整理後，新增、刪除、上色都會消失。${esc(STORE.msg)}<br>
+    可能原因與做法：① 在 Claude 的側邊預覽窗或無痕視窗開啟 → 請改用一般瀏覽器分頁開啟這個連結；② 瀏覽器封鎖第三方 Cookie／網站資料（Safari 的「防止跨網站追蹤」、Chrome 的「封鎖第三方 Cookie」）→ 把這個網站加入例外；③ 改用完整版（下載資料夾後雙擊 index.html）。${btn}<br><small>${esc(STORE.detail)}</small></div>`;
+  }else if(STORE.ok){
+    const t=new Date(STORE.time).toTimeString().slice(0,8);
+    const col=M.filter(m=>m.orig&&m.orig!=="@s"||m.orig==="@s"&&m.src!==(window.SAMPLES&&SAMPLES[m.id])).length;
+    el.innerHTML=`💾 已保存在這個瀏覽器（上次儲存 ${t}，共 ${STORE.n} 張，其中 ${col} 張有上色${STORE.persisted?"，已申請長期保存":""}）${btn}${STORE.detail?`<br><small>${esc(STORE.detail)}</small>`:""}`;
+  }else el.innerHTML="";
+}
+async function storeSelfTest(){
+  const r=[];
+  try{localStorage.setItem("__t","1");r.push("localStorage "+(localStorage.getItem("__t")==="1"?"✅":"❌"));localStorage.removeItem("__t")}catch(e){r.push("localStorage ❌ "+e.name)}
+  try{const ok=await new Promise(res=>{const o=indexedDB.open("mc_probe",1);o.onupgradeneeded=()=>o.result.createObjectStore("t");o.onerror=()=>res("❌ "+(o.error&&o.error.name));o.onblocked=()=>res("❌ blocked");
+    o.onsuccess=()=>{const d=o.result,tx=d.transaction("t","readwrite");tx.objectStore("t").put("x","k");tx.oncomplete=()=>{const g=d.transaction("t").objectStore("t").get("k");g.onsuccess=()=>{d.close();res(g.result==="x"?"✅":"❌ 讀回不一致")};g.onerror=()=>{d.close();res("❌ 讀取失敗")}};tx.onerror=tx.onabort=()=>{d.close();res("❌ 寫入失敗")}}});
+    r.push("IndexedDB "+ok)}catch(e){r.push("IndexedDB ❌ "+e.name)}
+  try{r.push("長期保存 "+((navigator.storage&&navigator.storage.persisted&&await navigator.storage.persisted())?"✅":"未啟用"))}catch(e){}
+  try{const e=await navigator.storage.estimate();r.push(`已用 ${(e.usage/1048576).toFixed(1)}MB / 上限 ${(e.quota/1048576).toFixed(0)}MB`)}catch(e){}
+  STORE.detail="檢查結果："+r.join("・");storeBar();
+}
+document.addEventListener("click",e=>{if(e.target.id==="storeCheck")storeSelfTest()});
+const MAX_SNAP=3;
+function sigOf(L){ // 輕量指紋：判斷兩個狀態是否相同（不比對整張圖）
+  let h=0;for(const m of L){const so=m.src||"",oo=m.orig&&m.orig!=="@s"?m.orig:(m.orig||"");
+    const t=[m.id,m.name,m.type,(m.types||[]).join("+"),m.skill,m.hp,m.atk,m.def,m.spd,m.wins||0,m.by||"",m.story||"",so.length,so.slice(-20),so.slice(so.length>>1,(so.length>>1)+20),oo.length,JSON.stringify(m.mouth||0),JSON.stringify(m.moveNames||0)].join("|");
+    for(let i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))>>>0}
+  return L.length+":"+h;
+}
+function writeCards(withBackup){
+  return new Promise((ok,no)=>{
+    const tx=_db.transaction(withBackup?["cards","backup"]:["cards"],"readwrite"),cs=tx.objectStore("cards"),bs=withBackup?tx.objectStore("backup"):null;
+    tx.oncomplete=ok;tx.onerror=tx.onabort=()=>no(tx.error||new Error("abort"));
+    const write=()=>{cs.clear();M.forEach((m,i)=>cs.put({...m,_i:i}))};
+    if(!withBackup){write();return}
+    const sigNew=sigOf(M),g=cs.getAll();
+    g.onsuccess=()=>{
+      const prev=g.result.sort((a,b)=>a._i-b._i).map(m=>{const c={...m};delete c._i;return c});
+      if(!prev.length||sigOf(prev)===sigNew){write();return} // 沒有變動就不留還原點
+      const sigPrev=sigOf(prev),gb=bs.getAll();
+      gb.onsuccess=()=>{
+        const list=gb.result.sort((a,b)=>b.t-a.t);
+        if(!(list[0]&&list[0].sig===sigPrev)){
+          list.slice(MAX_SNAP-1).forEach(r=>bs.delete(r.id));
+          bs.put({id:"s"+Date.now()+Math.random().toString(36).slice(2,6),t:Date.now(),sig:sigPrev,n:prev.length,cards:prev});
+        }
+        write();
+      };
+    };
+  });
+}
+/* 多視窗保護：每次儲存都會換一個「版本戳記」放在 localStorage。若這個畫面載入後，別的視窗／分頁改過資料，
+   這個畫面就是舊的；舊畫面不能再寫入，否則會把新資料（新拍的卡片、刪除結果）蓋掉。 */
+let myRev=LS.get("mc_rev"),STALE=false;
+function isStale(){const cur=LS.get("mc_rev");return cur!==myRev}
+function markStale(){
+  if(STALE)return;STALE=true;_dirty=false;
+  let el=document.getElementById("staleBar");
+  if(!el){el=document.createElement("div");el.id="staleBar";el.style.cssText="position:fixed;left:0;right:0;top:0;z-index:99999;background:#c0392b;color:#fff;padding:10px 14px;font-size:15px;text-align:center;box-shadow:0 2px 8px #0006";
+    el.innerHTML='⚠️ 另一個視窗／分頁已經更新過卡片，這個畫面是舊的，<b>已暫停儲存</b>（避免蓋掉新資料）。 <button id="staleReload" style="margin-left:8px;padding:3px 12px;font:inherit;border-radius:8px;border:0;cursor:pointer">重新整理，載入最新卡片</button>';
+    document.body.appendChild(el);document.getElementById("staleReload").onclick=()=>location.reload()}
+}
+function bumpRev(){const v=Date.now()+"."+Math.random().toString(36).slice(2,8);if(LS.set("mc_rev",v))myRev=v}
+window.addEventListener("storage",e=>{if(e.key==="mc_rev"&&isStale())markStale()});
+window.addEventListener("pageshow",e=>{if(e.persisted&&isStale())markStale()});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&isStale())markStale()});
+window.addEventListener("beforeunload",e=>{if(_dirty&&!STALE){e.preventDefault();e.returnValue=""}});
+async function persist(){
+  if(isStale()){markStale();return}
+  if(!_db){
+    if(LS.set(KEY,JSON.stringify(M))){bumpRev();STORE.ok=true;STORE.time=Date.now();STORE.n=M.length;STORE.msg=""}
+    else{STORE.ok=false;STORE.msg="（無法使用 IndexedDB，也無法寫入 localStorage）"}
+    storeBar();return}
+  try{
+    try{await writeCards(true)}
+    catch(e){ // 空間不夠時，優先保住主要資料：捨棄還原點再寫一次
+      if(e&&e.name==="QuotaExceededError"){try{await new Promise(r=>{const t=_db.transaction("backup","readwrite");t.objectStore("backup").clear();t.oncomplete=r;t.onerror=t.onabort=r})}catch(_){}
+        await writeCards(false);STORE.detail="空間不足，已清掉還原點以保住你的卡片"}
+      else throw e}
+    const n=await new Promise(r=>{const q=_db.transaction("cards").objectStore("cards").count();q.onsuccess=()=>r(q.result);q.onerror=()=>r(-1)});
+    bumpRev();STORE.ok=(n===M.length);STORE.time=Date.now();STORE.n=n;STORE.msg=STORE.ok?"":`（寫入後讀回 ${n} 張，應為 ${M.length} 張）`;
+  }catch(e){STORE.ok=false;STORE.msg="（寫入失敗："+(e&&e.name||"錯誤")+"，可能是儲存空間已滿）"}
+  storeBar();
+  if(typeof cloudKick==="function")cloudKick();
+}
+async function boot(){
+  _db=await dbOpen();let L=null,migrated=false;
+  if(!_db){STORE.ok=false;STORE.msg="（這個環境無法開啟 IndexedDB，改試 localStorage）"}
+  try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().then(v=>{STORE.persisted=v;storeBar()}).catch(()=>{})}catch(e){}
+  if(_db){L=await dbAll(_db);if(L&&L.length){L.sort((a,b)=>a._i-b._i);L.forEach(m=>delete m._i)}else L=null}
+  let inited=false;try{inited=LS.get("mc_init")==="1"}catch(e){}
+  if(!L&&!_db){try{const s=LS.get(KEY);if(s)L=JSON.parse(s)}catch(e){}}
+  if(!L&&_db){try{const s=LS.get(KEY);if(s){L=JSON.parse(s);migrated=true}}catch(e){}}
+  if(!L)L=inited?[]:seedList();
+  M=L;postLoad();
+  try{await persist();LS.set("mc_init","1");if(migrated&&_db)LS.del(KEY)}catch(e){}
+  if(typeof applyClear==="function")applyClear();
+  renderAll();
+  if(typeof cloudInit==="function")cloudInit();
+}
+const cp=m=>m.cp||Math.round(m.hp+m.atk*6+m.def*4+m.spd*3);
+const rarity=m=>{const c=cp(m);return c<1100?"N":c<1500?"R":c<1900?"SR":c<10000?"SSR":"UR"};
+const rnd=(a,b)=>Math.floor(a+Math.random()*(b-a+1));
+
+function mouthGeo(mo){
+  const ar=mo.ar||1,P=a=>[a[0]*ar,a[1]],Q=p=>[p[0]/ar*100,p[1]*100];
+  const H=P(mo.h),T=P(mo.t),C=P(mo.c),u=[T[0]-H[0],T[1]-H[1]],L=Math.hypot(u[0],u[1])||1e-6;
+  let n=[-u[1]/L,u[0]/L];const dc=(C[0]-H[0])*n[0]+(C[1]-H[1])*n[1];if(dc<0)n=[-n[0],-n[1]];
+  const depth=Math.max(.03,Math.abs(dc))*1.15,add=(p,k)=>[p[0]+n[0]*k,p[1]+n[1]*k];
+  const T2=[T[0]+.04*u[0],T[1]+.04*u[1]],Ti=[H[0]+.85*(T2[0]-H[0]),H[1]+.85*(T2[1]-H[1])],jaw=[H,T2,add(T2,depth),add(H,depth)];
+  let interior,ang=0,tx=0,ty=0;
+  if(mo.mode==="drop"){const d=(mo.amt||6)/100,o=[n[0]*d,n[1]*d];tx=o[0]/ar*100;ty=o[1]*100;interior=[H,Ti,[Ti[0]+o[0],Ti[1]+o[1]],[H[0]+o[0],H[1]+o[1]]]}
+  else{const sign=(u[0]*n[1]-u[1]*n[0])>0?1:-1,f=sign*(mo.amt||20)*Math.PI/180,cs=Math.cos(f),sn=Math.sin(f);
+    ang=sign*(mo.amt||20);const dx=Ti[0]-H[0],dy=Ti[1]-H[1];interior=[H,Ti,[H[0]+dx*cs-dy*sn,H[1]+dx*sn+dy*cs]]}
+  return{jaw:jaw.map(Q),interior:interior.map(Q),ang,tx,ty,origin:Q(H)};
+}
+const poly=a=>a.map(p=>p[0].toFixed(2)+"% "+p[1].toFixed(2)+"%").join(",");
+function mouthHTML(m){
+  const mo=m.mouth,g=mouthGeo(mo),h=hash(m.id||"x"),src=esc(m.vs||m.src);
+  return `<div class="mw a${h%3}" style="--ar:${mo.ar||1};--d:-${(h%30)/10}s;--ang:${g.ang}deg;--tx:${g.tx.toFixed(2)}%;--ty:${g.ty.toFixed(2)}%"><div class="mi" style="clip-path:polygon(${poly(g.interior)})"></div><img loading="lazy" decoding="async" src="${src}" alt="${esc(m.name)}" style="clip-path:polygon(evenodd,0% 0%,100% 0%,100% 100%,0% 100%,0% 0%,${poly(g.jaw)},${poly([g.jaw[0]])},0% 0%)"><img class="jaw" loading="lazy" decoding="async" src="${src}" alt="" style="clip-path:polygon(${poly(g.jaw)});transform-origin:${g.origin[0].toFixed(2)}% ${g.origin[1].toFixed(2)}%"></div>`;
+}
+const hash=s=>{let h=0;for(const c of String(s))h=(h*31+c.charCodeAt(0))>>>0;return h};
+function cardHTML(m,sel){
+  const r=rarity(m),vs=(CLEAR&&CUT.get(m.src))||m.src;
+  return `<div class="cw${sel?" hs":""}" data-id="${esc(m.id)}">${sel?`<input class="sel" type="checkbox" ${SELECTED.has(m.id)?"checked":""} title="選取"><button class="del" title="刪除這張卡">🗑 刪除</button>`:""}
+  <div class="card r${r}"><span class="rar">${r}</span>
+   <div class="h"><span class="n">${esc(m.name)}</span><span class="ts n${typesOf(m).length}">${typesOf(m).map(t=>`<span class="t">${esc(t)}</span>`).join("")}</span></div>
+   <div class="im">${m.mouth?mouthHTML({...m,vs}):`<img loading="lazy" decoding="async" class="a${hash(m.id)%3}" style="--d:-${(hash(m.id)%30)/10}s" src="${esc(vs)}" alt="${esc(m.name)}">`}</div>
+   <div class="sk"><b>${esc(m.skill)}</b><small>${esc(m.story)}</small></div>
+   <div class="st"><span>HP ${m.hp}</span><span>攻 ${m.atk}</span><span>防 ${m.def}</span><span>速 ${m.spd}</span></div>
+   <div class="f"><span>戰力 ${cp(m).toLocaleString()}</span><span>${esc(m.by)}・${r}・勝${m.wins||0}</span></div>
+  </div></div>`;
+}
+
+/* ---- 隨機取名 ---- */
+const PRE={草:["翠葉","古林","藤蔓","野萌"],水:["深海","碧波","潮汐","暗流"],火:["烈焰","赤紅","熔岩","焚天"],冰:["寒霜","冰晶","凍原","雪嶺"],幽靈:["幽影","鬼火","夜遊","迷霧"],蟲:["甲殼","蟲群","絲網","蠕動"],一般:["平凡","普通","野生","憨憨"],電:["雷光","閃電","電弧","雷鳴"],地面:["大地","沙暴","泥濘","裂地"],岩石:["岩石","碎石","鐵礦","山嶺"],超能力:["念力","心靈","星界","幻影"],毒:["劇毒","腐蝕","紫霧","毒牙"],格鬥:["鐵拳","狂刀","破陣","連擊"],鋼:["鋼鐵","銀刃","合金","鐵壁"],惡:["暗夜","血月","夜行","深淵"],龍:["龍魂","蒼穹","烈龍","古龍"],妖精:["星塵","月華","花仙","夢幻"],飛行:["疾風","天翼","雲端","鷹擊"]};
+const SUF=["獸","王","魔","龍","爪","牙","君","將軍","博士","大帝","霸主","幽靈","戰士","先生","大叔","寶寶"];
+const SK1={火:["烈焰","爆炎","熔岩"],水:["怒濤","深海","冰刃"],森:["藤蔓","毒花","森林"],地:["岩崩","地裂","鐵甲"],風:["雷霆","颶風","疾風"],暗:["暗影","血月","幽冥"],毒:["劇毒","腐蝕","毒霧"],武:["連環","破天","鐵拳"],力:["怪力","泰山","金剛"]};
+const SK2=["衝撞","噬咬","旋風","重擊","吼叫","爪擊","突襲","震擊","亂舞","吞噬"];
+const pick=a=>a[rnd(0,a.length-1)];
+function randName(type){
+  const used=new Set(M.map(m=>m.name));let n;
+  for(let i=0;i<30;i++){n=pick(PRE[type]||PRE.火)+pick(SUF);if(!used.has(n))return n}
+  return n+rnd(2,99);
+}
+const randSkill=type=>pick((TYPE_SKILL[type]||TYPE_SKILL["一般"]).ults);
+$("#rnameBtn").onclick=()=>{f_name.value=randName(f_type.value)};
+$("#rskillBtn").onclick=()=>{f_skill.value=randSkill(f_type.value)};
+$("#nameSel").onclick=()=>{
+  const L=M.filter(m=>SELECTED.has(m.id));if(!L.length){toast("請先勾選要取名的卡片");return}
+  ask(`幫勾選的 ${L.length} 張卡片重新隨機取名（技能名稱不變）？9 秒內可復原。`,"確定取名").then(y=>{
+    if(!y)return;const old=L.map(m=>[m,m.name]);
+    L.forEach(m=>{m.name=randName(m.type)});save();renderAll();
+    toast(`已替 ${L.length} 張卡片取名`,"復原",()=>{old.forEach(([m,n])=>m.name=n);save();renderAll()});
+  });
+};
+
+/* ---- 刪除 / 提示 ---- */
+let _tt=null,_ta=null;
+function toast(msg,label,fn,ms){
+  const t=$("#toast");$("#tmsg").textContent=msg;const b=$("#tact");b.hidden=!label;b.textContent=label||"";_ta=fn||null;
+  const od=[...document.querySelectorAll("dialog[open]")].pop();(od||document.body).appendChild(t);
+  t.style.display="flex";clearTimeout(_tt);_tt=setTimeout(()=>{t.style.display="none";_ta=null},ms||(label?9000:3500));
+}
+$("#tact").onclick=()=>{if(_ta)_ta();$("#toast").style.display="none";_ta=null};
+window.alert=m=>toast(String(m));
+function ask(msg,yes){return new Promise(ok=>{
+  $("#cmsg").textContent=msg;$("#cyes").textContent=yes||"確定刪除";const d=$("#cdlg");
+  $("#cyes").onclick=()=>{d.close();ok(true)};$("#cno").onclick=()=>{d.close();ok(false)};d.oncancel=()=>ok(false);d.showModal()})}
+function removeCards(ids){
+  const set=new Set(ids),gone=M.filter(m=>set.has(m.id));if(!gone.length)return;
+  M=M.filter(m=>!set.has(m.id));ids.forEach(i=>SELECTED.delete(i));save();renderAll();
+  toast(`已刪除 ${gone.length} 張`,"復原",()=>{M=M.concat(gone);save();renderAll()});
+}
+
+/* ---- 圖鑑 ---- */
+const SELECTED=new Set();
+function renderDex(){
+  const q=$("#q").value.trim(),s=$("#sortBy").value;
+  let L=M.filter(m=>!q||m.name.includes(q)||typesOf(m).some(t=>t.includes(q))||(m.by||"").includes(q));
+  L.sort((a,b)=>s==="cp"?cp(b)-cp(a):s==="wins"?(b.wins||0)-(a.wins||0):b.t-a.t);
+  $("#grid").innerHTML=L.map(m=>cardHTML(m,true)).join("");
+  $("#cnt").textContent=`共 ${M.length}／${MAX_CARDS} 隻，已選 ${SELECTED.size} 隻`;
+}
+$("#grid").addEventListener("click",e=>{
+  const cw=e.target.closest(".cw");if(!cw)return;const id=cw.dataset.id;
+  if(e.target.closest(".del")){const m=M.find(x=>x.id===id);ask(`刪除「${m?m.name:""}」？刪除後 9 秒內可按「復原」。`).then(y=>{if(y)removeCards([id])});return}
+  if(e.target.classList.contains("sel")){e.target.checked?SELECTED.add(id):SELECTED.delete(id);$("#cnt").textContent=`共 ${M.length}／${MAX_CARDS} 隻，已選 ${SELECTED.size} 隻`;return}
+  openEdit(id);
+});
+{const sv=LS.get("mc_sort");$("#sortBy").value=["cp","wins","new"].includes(sv)?sv:"new"} // 預設：最新新增的排最前面
+$("#sortBy").addEventListener("change",()=>LS.set("mc_sort",$("#sortBy").value));
+["q","sortBy"].forEach(i=>$("#"+i).addEventListener("input",renderDex));
+$("#selAll").onclick=()=>{M.forEach(m=>SELECTED.add(m.id));renderDex()};
+$("#delSel").onclick=()=>{const ids=[...SELECTED].filter(i=>M.some(m=>m.id===i));if(!ids.length){toast("請先勾選要刪除的卡片");return}ask(`刪除已勾選的 ${ids.length} 張卡片？刪除後 9 秒內可按「復原」。`).then(y=>{if(y)removeCards(ids)})};
+$("#selNone").onclick=()=>{SELECTED.clear();renderDex()};
+$("#exp").onclick=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(M)],{type:"application/json"}));a.download="monsters.json";a.click()};
+$("#imp").onchange=async e=>{try{const d=JSON.parse(await e.target.files[0].text());if(!Array.isArray(d))throw 0;M=d;save();renderAll()}catch(_){alert("檔案格式不對")}};
+$("#reset").onclick=()=>{ask("會清掉所有新增的怪獸、上色、張嘴設定與戰績，並還原成 26 隻範例。確定？","確定還原").then(y=>{if(y){M=seedList();try{LS.del("mc_extra")}catch(e){}postLoad();SELECTED.clear();save();renderAll()}})};
+
+/* ---- 動畫開關 ---- */
+let ANIM=true;try{ANIM=LS.get("mc_anim")!=="0"}catch(e){}
+function applyAnim(){document.body.classList.toggle("noanim",!ANIM);$("#animT").textContent="動畫："+(ANIM?"開":"關")}
+$("#animT").onclick=()=>{ANIM=!ANIM;try{LS.set("mc_anim",ANIM?"1":"0")}catch(e){}applyAnim()};
+applyAnim();
+
+/* ---- 還原點 ---- */
+function listSnaps(){return new Promise(res=>{if(!_db)return res([]);try{const r=_db.transaction("backup").objectStore("backup").getAll();r.onsuccess=()=>res(r.result.sort((a,b)=>b.t-a.t));r.onerror=()=>res([])}catch(e){res([])}})}
+function snapDiff(cards){
+  const cur=new Map(M.map(m=>[m.id,m])),old=new Map(cards.map(m=>[m.id,m]));let back=0,gone=0,chg=0;
+  cards.forEach(c=>{const x=cur.get(c.id);if(!x)back++;else if(sigOf([c])!==sigOf([x]))chg++});M.forEach(m=>{if(!old.has(m.id))gone++});
+  return{back,gone,chg};
+}
+$("#rpBtn").onclick=async()=>{
+  if(!_db){toast("這個瀏覽器環境無法保存還原點");return}
+  const L=await listSnaps(),box=$("#rlist");
+  if(!L.length)box.innerHTML='<p class="sub">目前還沒有還原點。做過修改（改屬性、上色、刪除、新增…）之後才會出現。</p>';
+  else box.innerHTML=L.map((r,i)=>{const d=snapDiff(r.cards),col=r.cards.filter(m=>m.orig).length,tm=new Date(r.t).toTimeString().slice(0,8);
+    const parts=[];if(d.back)parts.push(`找回 ${d.back} 張目前沒有的卡片`);if(d.gone)parts.push(`移除 ${d.gone} 張目前才有的卡片`);if(d.chg)parts.push(`${d.chg} 張的內容（名字、屬性、顏色、技能等）回到當時`);
+    return `<div class="panel" style="margin-bottom:8px"><b>${i===0?"上一次存檔":"更早的存檔 "+i}</b>　${tm}・共 ${r.n} 張，其中 ${col} 張有上色<br><span class="sub">${parts.length?"還原後："+parts.join("；"):"與目前內容相同"}</span><div class="bar" style="margin:8px 0 0"><button class="b p" data-rid="${esc(r.id)}">還原到這個狀態</button></div></div>`}).join("");
+  box.dataset.snaps=JSON.stringify(L.map(r=>r.id));window.__snaps=L;$("#rdlg").showModal();
+};
+$("#rlist").addEventListener("click",e=>{
+  const id=e.target.dataset&&e.target.dataset.rid;if(!id)return;const r=(window.__snaps||[]).find(x=>x.id===id);if(!r)return;
+  M=r.cards.map(c=>({...c}));SELECTED.clear();save();renderAll();$("#rdlg").close();
+  toast(`已還原成 ${new Date(r.t).toTimeString().slice(0,8)} 的狀態（共 ${M.length} 張）。想回到還原前，再按一次「↩ 還原上一次存檔」`,null,null,9000);
+});
+$("#rclose").onclick=()=>$("#rdlg").close();
+
+/* ---- 清除本機所有資料 ---- */
+$("#wipe").onclick=()=>ask("會刪除這台裝置上保存的所有怪獸、照片、戰績與設定（不影響別人的裝置）。確定？","確定清除").then(y=>{
+  if(!y)return;
+  try{["mc_extra","mc_init","mc_audio","mc_stage","mc_bg","mc_clear","mc_anim",KEY].forEach(k=>LS.del(k))}catch(e){}
+  const done=()=>location.reload();
+  try{if(_db)_db.close();const r=indexedDB.deleteDatabase("monster_cards_db");r.onsuccess=r.onerror=r.onblocked=done;setTimeout(done,1500)}catch(e){done()}
+});
+
+/* ---- 編輯 ---- */
+let editing=null;
+$("#f_type").innerHTML=TYPES.map(t=>`<option>${t}</option>`).join("");
+const typeOpts='<option value="">（無）</option>'+TYPES.map(t=>`<option>${t}</option>`).join("");
+$("#f_type2").innerHTML=typeOpts;$("#f_type3").innerHTML=typeOpts;
+function normTypes(){ // 最多 3 個、不重複；第 2 空則第 3 往前補
+  const a=[f_type.value,f_type2.value,f_type3.value];
+  if(a[1]===a[0])a[1]="";if(a[2]===a[0]||a[2]===a[1])a[2]="";if(!a[1]&&a[2]){a[1]=a[2];a[2]=""}
+  f_type2.value=a[1];f_type3.value=a[2];return a.filter(Boolean);
+}
+function refreshMvPlaceholders(){
+  if(!editing)return;const ts=normTypes();
+  const df=Object.fromEntries(movesOf({...editing,type:ts[0],types:ts,moveNames:null}).map(x=>[x.id,x.name]));
+  document.querySelectorAll("#mvNames [data-mk]").forEach(i=>{const k=i.dataset.mk;i.placeholder=df[k]||"";
+    if(k.startsWith("elem")){const idx=k==="elem2"?1:k==="elem3"?2:0;i.closest("div").style.display=idx<ts.length?"":"none";i.closest("label").firstChild.textContent=`屬性技（${ts[idx]||""}）`}});
+}
+$("#f_type").addEventListener("change",()=>{
+  const cur=f_skill.value.trim();
+  if(!cur||ALL_ULTS.has(cur))f_skill.value=TYPE_SKILL[f_type.value].ults[0]; // 技能跟著第 1 屬性走（手動改過的名稱不動）
+  refreshMvPlaceholders();
+});
+["#f_type2","#f_type3"].forEach(i=>$(i).addEventListener("change",refreshMvPlaceholders));
+
+const MV_KEYS=[["basic","普通攻擊"],["combo","連擊"],["elem","屬性技"],["elem2","屬性技"],["elem3","屬性技"],["guard","防禦"],["charge","蓄力"],["heal","回復"]];
+function openEdit(id){
+  const m=M.find(x=>x.id===id);if(!m)return;editing=m;
+  f_name.value=m.name;f_type.value=typesOf(m)[0];f_type2.value=typesOf(m)[1]||"";f_type3.value=typesOf(m)[2]||"";f_hp.value=m.hp;f_atk.value=m.atk;f_def.value=m.def;f_spd.value=m.spd;f_skill.value=m.skill;f_by.value=m.by||"";f_story.value=m.story||"";
+  const df=Object.fromEntries(movesOf({...m,moveNames:null}).map(x=>[x.id,x.name])),nm=m.moveNames||{};
+  $("#mvNames").innerHTML=MV_KEYS.map(([k,l])=>`<div><label>${l}<input data-mk="${k}" maxlength="12" placeholder="${esc(df[k])}" value="${esc(nm[k]||"")}"></label></div>`).join("");
+  $("#editPrev").src=m.src;
+  refreshMvPlaceholders();
+  $("#dlg").showModal();
+}
+$("#frm").addEventListener("submit",e=>{
+  if(e.submitter?.value!=="save"||!editing)return;
+  Object.assign(editing,{name:f_name.value||"無名怪獸",type:f_type.value,hp:+f_hp.value||1,atk:+f_atk.value||1,def:+f_def.value||0,spd:+f_spd.value||1,skill:f_skill.value.trim()||TYPE_SKILL[f_type.value].ults[0],by:f_by.value,story:f_story.value,tv:TV});
+  editing.skillCustom=!ALL_ULTS.has(editing.skill);if(!editing.skillCustom)delete editing.skillCustom;
+  {const ts=normTypes();editing.type=ts[0];if(ts.length>1)editing.types=ts;else delete editing.types}
+  const mn={};document.querySelectorAll("#mvNames input").forEach(i=>{const v=i.value.trim().slice(0,12);if(v)mn[i.dataset.mk]=v});
+  if(Object.keys(mn).length)editing.moveNames=mn;else delete editing.moveNames;
+  save();renderAll();
+});
+$("#mvNamesReset").onclick=()=>document.querySelectorAll("#mvNames input").forEach(i=>i.value="");
+$("#reroll").onclick=()=>{f_hp.value=rnd(300,800);f_atk.value=rnd(50,110);f_def.value=rnd(30,100);f_spd.value=rnd(20,95)};
+$("#del").onclick=()=>{if(!editing)return;const m=editing;$("#dlg").close();ask(`刪除「${m.name}」？刪除後 9 秒內可按「復原」。`).then(y=>{if(y)removeCards([m.id])})};
+
+
+/* ---- 自動上色 / 隨機換色 ---- */
+const PAL_T={草:["#4cae4f","#7bd35b","#2f8f5a","#c6e05a"],水:["#2a8fd8","#48c9d8","#1d5fa8","#7fd8ff"],火:["#e63946","#f4803a","#ffb703","#c1121f"],冰:["#9fe8ff","#6cc6f0","#d7f4ff","#4a9fd8"],電:["#ffd23f","#f4a300","#fff27a","#3a3a3a"],幽靈:["#6a3fb5","#9b7fd6","#3d3a6e","#c8b6ff"],蟲:["#8cb82f","#c6d94a","#6b8e23","#d9a441"],一般:["#d9c9a8","#b59f7a","#8d7b5c","#efe3c8"],地面:["#b9854a","#8d6e4a","#d9a55a","#6f5a3a"],岩石:["#8d8070","#a89c88","#6e6355","#c2b59b"],超能力:["#ff6fb1","#b06bff","#ff9fd0","#7a4fd0"],毒:["#8cd13a","#b04fd1","#4fc27a","#d0e03a"],格鬥:["#d94a3a","#e8873a","#b23a2e","#f2c14e"],鋼:["#9aa7b4","#c5ced6","#6e7b88","#e0e6eb"],惡:["#3d3a4f","#6a4a5a","#2b2a3a","#8a5a7a"],龍:["#4a5be0","#6a8cff","#2f3fa8","#f2b84a"],妖精:["#ffb3e6","#ffd1f0","#e68fd6","#fff0fa"],飛行:["#7fc8ff","#b9e3ff","#5a9fe0","#f5f9ff"]};
+const PAL_ALL=["#e63946","#f4a261","#ffd23f","#6bbf59","#2a9d8f","#4ea8de","#7b5ea7","#ff8fab","#8d6e63","#48c9d8","#b04fd1","#e8b923"];
+const PAL_ACC=["#ffd23f","#e63946","#ffffff","#2b2b2b","#ff8fab"];
+const _pick=a=>a[Math.floor(Math.random()*a.length)];
+function makeBarrier(lum,w,h,tv,close){
+  const B=16,bw=Math.ceil(w/B),bh=Math.ceil(h/B),mx=new Uint8Array(bw*bh);
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){const k=((y/B)|0)*bw+((x/B)|0),v=lum[y*w+x];if(v>mx[k])mx[k]=v}
+  const sm=new Uint8Array(bw*bh);
+  for(let y=0;y<bh;y++)for(let x=0;x<bw;x++){let m=0;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const X=x+dx,Y=y+dy;if(X>=0&&X<bw&&Y>=0&&Y<bh&&mx[Y*bw+X]>m)m=mx[Y*bw+X]}sm[y*bw+x]=m}
+  let bar=new Uint8Array(w*h);
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=y*w+x,bg=Math.max(60,sm[((y/B)|0)*bw+((x/B)|0)]);bar[i]=(lum[i]<110||lum[i]<bg*tv)?1:0}
+  if(close>0){ // 封口：把線條加粗，堵住小缺口
+    const tmp=new Uint8Array(w*h),res=new Uint8Array(w*h);
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++){let v=0;for(let dx=-close;dx<=close&&!v;dx++){const X=x+dx;if(X>=0&&X<w&&bar[y*w+X])v=1}tmp[y*w+x]=v}
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++){let v=0;for(let dy=-close;dy<=close&&!v;dy++){const Y=y+dy;if(Y>=0&&Y<h&&tmp[Y*w+x])v=1}res[y*w+x]=v}
+    bar=res;
+  }
+  return bar;
+}
+function regionBar(bar,w,h,sx,sy,vis,R){
+  const st=new Int32Array(w*h),out=[];let sp=0,touch=false,clipped=false;const s0=sy*w+sx;st[sp++]=s0;vis[s0]=1;const lim=R||Infinity;
+  const ok=j=>{if(lim===Infinity)return true;const dx=Math.abs((j%w)-sx),dy=Math.abs(((j/w)|0)-sy);if(dx<=lim&&dy<=lim)return true;clipped=true;return false};
+  while(sp){const i=st[--sp];out.push(i);const x=i%w,y=(i/w)|0;if(x===0||y===0||x===w-1||y===h-1)touch=true;
+    if(x>0){const j=i-1;if(!vis[j]&&!bar[j]&&ok(j)){vis[j]=1;st[sp++]=j}}
+    if(x<w-1){const j=i+1;if(!vis[j]&&!bar[j]&&ok(j)){vis[j]=1;st[sp++]=j}}
+    if(y>0){const j=i-w;if(!vis[j]&&!bar[j]&&ok(j)){vis[j]=1;st[sp++]=j}}
+    if(y<h-1){const j=i+w;if(!vis[j]&&!bar[j]&&ok(j)){vis[j]=1;st[sp++]=j}}}
+  return{list:out,size:out.length,touch,clipped};
+}
+// 把區塊往旁邊的線條邊緣擴張 n 圈（乘色法會保留深色線條）
+function growEdge(list,lum,bar,w,h,n){
+  const mark=new Uint8Array(w*h);for(const i of list)mark[i]=1;let front=list,all=list.slice();
+  for(let r=0;r<n;r++){const nx=[];
+    for(const i of front){const x=i%w,y=(i/w)|0;for(const j of [x>0?i-1:-1,x<w-1?i+1:-1,y>0?i-w:-1,y<h-1?i+w:-1])if(j>=0&&!mark[j]&&bar[j]&&lum[j]>100){mark[j]=1;nx.push(j)}}
+    all=all.concat(nx);front=nx}
+  return all;
+}
+function palFor(t){const ts=Array.isArray(t)?t:[t];if(ts.length<2)return PAL_T[ts[0]]||PAL_ALL.slice(0,4);const out=[];for(let i=0;out.length<4&&i<4;i++)ts.forEach(x=>{const c=(PAL_T[x]||[])[i];if(c&&out.length<4)out.push(c)});return out.length?out:PAL_ALL.slice(0,4)}
+function autoColorInto(outData,lum,w,h,type,mode){
+  const A=w*h,vis=new Uint8Array(A),regs=[];
+  const bar=makeBarrier(lum,w,h,.80,2);
+  for(let i=0;i<A;i++){if(vis[i]||bar[i])continue;regs.push(regionBar(bar,w,h,i%w,(i/w)|0,vis))}
+  let bg=null;regs.forEach(r=>{if(r.touch&&(!bg||r.size>bg.size))bg=r});
+  const main=mode==="random"?Array.from({length:4},()=>_pick(PAL_ALL)):palFor(type);
+  regs.forEach(r=>{
+    if(r===bg||r.size<30)return;
+    const col=r.size>A*.04?_pick(main):(Math.random()<.6?_pick(PAL_ACC):_pick(main)),c=hex(col);
+    for(const i of growEdge(r.list,lum,bar,w,h,3)){const f=Math.min(1,lum[i]/215);outData[i*4]=c[0]*f;outData[i*4+1]=c[1]*f;outData[i*4+2]=c[2]*f}
+  });
+}
+function autoColorImage(img,type,mode){
+  const bd=pixels(img),w=bd.width,h=bd.height,lum=new Uint8Array(w*h),d=bd.data;
+  for(let i=0;i<lum.length;i++)lum[i]=.299*d[i*4]+.587*d[i*4+1]+.114*d[i*4+2];
+  const out=new Uint8ClampedArray(d);autoColorInto(out,lum,w,h,type,mode);
+  const c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").putImageData(new ImageData(out,w,h),0,0);
+  return c.toDataURL("image/jpeg",.85);
+}
+async function recolor(m,mode){
+  try{const img=await loadImg(origOf(m)),u=autoColorImage(img,typesOf(m),mode||"type");if(!m.orig)m.orig=m.src;m.src=u}catch(e){}
+}
+
+/* ---- 上色 ---- */
+const PAL=["#e63946","#f4a261","#ffd23f","#6bbf59","#2a9d8f","#4ea8de","#7b5ea7","#ff8fab","#8d6e63","#ffffff","#8a8f98","#3a3a3a"];
+let P=null;const TH=165;
+const loadImg=src=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=src});
+const hex=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+function pixels(img){const c=document.createElement("canvas");c.width=img.naturalWidth;c.height=img.naturalHeight;const x=c.getContext("2d",{willReadFrequently:true});x.drawImage(img,0,0);return x.getImageData(0,0,c.width,c.height)}
+async function openPaint(){
+  const m=editing;if(!m)return;$("#dlg").close();
+  try{
+    const base=await loadImg(origOf(m)),cur=await loadImg(m.src),bd=pixels(base);
+    const cv=$("#pcv");cv.width=bd.width;cv.height=bd.height;
+    const ctx=cv.getContext("2d",{willReadFrequently:true});ctx.drawImage(cur,0,0,bd.width,bd.height);
+    const lum=new Uint8Array(bd.width*bd.height);for(let i=0;i<lum.length;i++){const d=bd.data;lum[i]=.299*d[i*4]+.587*d[i*4+1]+.114*d[i*4+2]}
+    P={m,ctx,w:bd.width,h:bd.height,bd,lum,color:PAL[0],stack:[],baseSrc:origOf(m),mode:"fill",brush:8,tv:.80,close:2,maxR:20};
+    P.bar=makeBarrier(lum,P.w,P.h,P.tv,P.close);
+    P.img=ctx.getImageData(0,0,P.w,P.h);
+  }catch(e){alert("這張圖無法上色（瀏覽器的安全限制）。請改用完整版或重新上傳這張圖。");return}
+  $("#pMax").value=20;$("#pMaxV").textContent="20%";$("#pClose").value=2;$("#pCloseV").textContent=2;$("#pTv").value=80;$("#pTvV").textContent=80;$("#brushSz").value=8;$("#pzoom").value=100;$("#pcv").style.width="100%";setMode("fill");
+  $("#pal").innerHTML=PAL.map((c,i)=>`<button class="sw${i?"":" on"}" data-c="${c}" style="background:${c}" title="${c}"></button>`).join("");
+  $("#pdlg").showModal();
+}
+function snap(){P.stack.push(new Uint8ClampedArray(P.img.data));if(P.stack.length>10)P.stack.shift()}
+function paintList(list,n,color){
+  const [r,g,b]=hex(color),d=P.img.data,L=P.lum;n=n==null?list.length:n;
+  for(let k=0;k<n;k++){const i=list[k],f=Math.min(1,L[i]/215);d[i*4]=r*f;d[i*4+1]=g*f;d[i*4+2]=b*f}
+}
+function recalcBarrier(){P.barCache={};P.bar=makeBarrier(P.lum,P.w,P.h,P.tv,P.close)}
+function nearOpen(x,y){ // 點到線上時，找附近最近的可填色像素
+  const {w,h,bar}=P;if(!bar[y*w+x])return[x,y];
+  for(let r=1;r<=6;r++)for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){if(Math.max(Math.abs(dx),Math.abs(dy))!==r)continue;const X=x+dx,Y=y+dy;if(X>=0&&X<w&&Y>=0&&Y<h&&!bar[Y*w+X])return[X,Y]}
+  return null;
+}
+function flush(){P.ctx.putImageData(P.img,0,0)}
+function ppos(e){const cv=$("#pcv"),r=cv.getBoundingClientRect();return[Math.floor((e.clientX-r.left)*P.w/r.width),Math.floor((e.clientY-r.top)*P.h/r.height)]}
+function stamp(cx,cy){
+  const R=P.brush,{w,h,lum}=P,[r,g,b]=hex(P.color),d=P.img.data;
+  for(let y=Math.max(0,cy-R);y<=Math.min(h-1,cy+R);y++)for(let x=Math.max(0,cx-R);x<=Math.min(w-1,cx+R);x++){
+    if((x-cx)*(x-cx)+(y-cy)*(y-cy)>R*R)continue;const i=y*w+x,f=Math.min(1,lum[i]/215);d[i*4]=r*f;d[i*4+1]=g*f;d[i*4+2]=b*f}
+}
+let _last=null;
+$("#pcv").addEventListener("pointerdown",e=>{
+  if(!P)return;const [x,y]=ppos(e);if(x<0||y<0||x>=P.w||y>=P.h)return;
+  if(P.mode==="brush"){e.target.setPointerCapture(e.pointerId);snap();_last=[x,y];stamp(x,y);flush();return}
+  const o=nearOpen(x,y);if(!o){toast("點在線條上了，請點小格裡面");return}
+  const R=P.maxR>=100?0:P.maxR/100*Math.max(P.w,P.h);let done=false,usedClose=P.close,bigger=false;
+  P.barCache=P.barCache||{};
+  for(let c=P.close;c<=6;c++){
+    const bar=c===P.close?P.bar:(P.barCache[c+"|"+P.tv]||(P.barCache[c+"|"+P.tv]=makeBarrier(P.lum,P.w,P.h,P.tv,c)));
+    if(bar[o[1]*P.w+o[0]])break;
+    const g=regionBar(bar,P.w,P.h,o[0],o[1],new Uint8Array(P.w*P.h),R);
+    if(!g.clipped){snap();paintList(growEdge(g.list,P.lum,bar,P.w,P.h,c+1),null,P.color);flush();done=true;usedClose=c;break}
+    bigger=true;
+  }
+  if(!done){toast("這一格有缺口或比「最大填色範圍」大，沒有填色。可在「進階設定」把範圍拉大，或改用 🖌 畫筆");return}
+  if(usedClose>P.close)toast(`有缺口，已自動把封口加強到 ${usedClose} 再填`);
+});
+$("#pcv").addEventListener("pointermove",e=>{
+  if(!P||P.mode!=="brush"||!_last||!(e.buttons&1))return;const [x,y]=ppos(e),[x0,y0]=_last,n=Math.max(Math.abs(x-x0),Math.abs(y-y0),1);
+  for(let k=1;k<=n;k++)stamp(Math.round(x0+(x-x0)*k/n),Math.round(y0+(y-y0)*k/n));_last=[x,y];flush();
+});
+["pointerup","pointercancel"].forEach(t=>$("#pcv").addEventListener(t,()=>{_last=null}));
+function setMode(m){P.mode=m;$("#mFill").classList.toggle("p",m==="fill");$("#mBrush").classList.toggle("p",m==="brush");$("#pcv").style.cursor=m==="brush"?"cell":"crosshair"}
+$("#mFill").onclick=()=>setMode("fill");$("#mBrush").onclick=()=>setMode("brush");
+$("#brushSz").oninput=e=>{P.brush=+e.target.value};
+$("#pzoom").oninput=e=>{$("#pcv").style.width=e.target.value+"%"};
+$("#pMax").oninput=e=>{P.maxR=+e.target.value;$("#pMaxV").textContent=P.maxR>=100?"不限制":P.maxR+"%"};
+$("#pClose").oninput=e=>{P.close=+e.target.value;$("#pCloseV").textContent=P.close;recalcBarrier()};
+$("#pTv").oninput=e=>{P.tv=e.target.value/100;$("#pTvV").textContent=e.target.value;recalcBarrier()};
+$("#pal").addEventListener("click",e=>{const c=e.target.dataset.c;if(!c)return;P.color=c;document.querySelectorAll("#pal .sw").forEach(b=>b.classList.toggle("on",b===e.target))});
+$("#pcol").oninput=e=>{P.color=e.target.value;document.querySelectorAll("#pal .sw").forEach(b=>b.classList.remove("on"))};
+$("#pauto").onclick=()=>{snap();autoColorInto(P.img.data,P.lum,P.w,P.h,typesOf(P.m),"random");flush()};
+$("#pundo").onclick=()=>{if(P.stack.length){P.img.data.set(P.stack.pop());flush()}};
+$("#pbase").onclick=async()=>{snap();const d=pixels(await loadImg(P.baseSrc)).data;P.img.data.set(d);flush()};
+function paintSave(){
+  if(!P)return;P.m.orig=P.m.orig||P.baseSrc;P.m.src=$("#pcv").toDataURL("image/jpeg",.82);
+  save();P=null;$("#pdlg").close();renderAll();toast("已儲存上色結果");
+}
+$("#pdone").onclick=paintSave;
+$("#pcancel").onclick=async()=>{
+  if(!P)return;
+  if(P.stack.length&&!(await ask("有尚未儲存的上色，確定放棄？","放棄")))return;
+  P=null;$("#pdlg").close();renderAll();
+};
+// 用 Esc 等方式關閉視窗時，視為「完成」，避免上色白做
+$("#pdlg").addEventListener("cancel",e=>{if(P){e.preventDefault();paintSave()}});
+$("#paintBtn").onclick=openPaint;
+
+
+/* ---- 張嘴設定 ---- */
+let MS=null;
+const mcv=$("#mcv");
+async function openMouth(){
+  const m=editing;if(!m)return;$("#dlg").close();
+  const im=await loadImg(m.src);mcv.width=im.naturalWidth;mcv.height=im.naturalHeight;
+  const mo=m.mouth||{};
+  MS={m,im,pts:m.mouth?[mo.h,mo.t,mo.c]:[],mode:mo.mode||"rotate",amt:mo.amt||20,ar:im.naturalWidth/im.naturalHeight};
+  document.querySelector(`input[name=mmode][value=${MS.mode}]`).checked=true;setRange();$("#mamt").value=MS.amt;
+  mdraw();$("#mdlg").showModal();
+}
+function setRange(){const r=$("#mamt");if(MS.mode==="drop"){r.min=2;r.max=15}else{r.min=5;r.max=45}}
+function mdraw(){
+  const c=mcv.getContext("2d");c.drawImage(MS.im,0,0);const w=mcv.width,h=mcv.height,r=Math.max(5,w/90);
+  MS.pts.forEach((p,i)=>{c.fillStyle=["#e63946","#2a9d8f","#4ea8de"][i];c.beginPath();c.arc(p[0]*w,p[1]*h,r,0,7);c.fill();c.fillStyle="#fff";c.font=`bold ${r*1.4}px sans-serif`;c.textAlign="center";c.textBaseline="middle";c.fillText(i+1,p[0]*w,p[1]*h)});
+  const ok=MS.pts.length===3;$("#mstep").textContent=ok?"完成三點。可調整下面的張開幅度，預覽在右側，滿意就按「完成」。":`請點第 ${MS.pts.length+1} 點：${["①嘴巴後方（嘴角）","②嘴巴前端","③下巴最低處"][MS.pts.length]}`;
+  $("#mprev").innerHTML=ok?mouthHTML({id:MS.m.id,name:MS.m.name,src:MS.m.src,mouth:{h:MS.pts[0],t:MS.pts[1],c:MS.pts[2],mode:MS.mode,amt:MS.amt,ar:MS.ar}}):"";
+}
+mcv.addEventListener("pointerdown",e=>{
+  if(!MS)return;const r=mcv.getBoundingClientRect(),p=[(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height];
+  if(MS.pts.length>=3)MS.pts=[];MS.pts.push(p);mdraw();
+});
+$("#mamt").oninput=e=>{MS.amt=+e.target.value;mdraw()};
+document.querySelectorAll("input[name=mmode]").forEach(r=>r.onchange=e=>{MS.mode=e.target.value;MS.amt=MS.mode==="drop"?6:20;setRange();$("#mamt").value=MS.amt;mdraw()});
+$("#mreset").onclick=()=>{MS.pts=[];mdraw()};
+$("#mclear").onclick=()=>{MS.m.mouth=null;save();MS=null;$("#mdlg").close();renderAll()};
+$("#mcancel").onclick=()=>{MS=null;$("#mdlg").close()};
+$("#mdone").onclick=()=>{
+  if(MS.pts.length<3){alert("請先點完三個點");return}
+  MS.m.mouth={h:MS.pts[0],t:MS.pts[1],c:MS.pts[2],mode:MS.mode,amt:MS.amt,ar:MS.ar};
+  save();MS=null;$("#mdlg").close();renderAll();
+};
+$("#mouthBtn").onclick=openMouth;
+
+/* ---- 去背貼紙 ---- */
+const CUT=new Map();
+async function makeCut(src){
+  const im=await loadImg(src),k=Math.min(1,520/Math.max(im.naturalWidth,im.naturalHeight));
+  const w=Math.round(im.naturalWidth*k),h=Math.round(im.naturalHeight*k),n=w*h;
+  const c=document.createElement("canvas");c.width=w;c.height=h;const x=c.getContext("2d",{willReadFrequently:true});x.drawImage(im,0,0,w,h);
+  const id=x.getImageData(0,0,w,h),d=id.data;
+  const pc=[0,1,2].map(ch=>{const hs=new Uint32Array(256);for(let i=0;i<n;i++)hs[d[i*4+ch]]++;let a=0;for(let v=0;v<256;v++){a+=hs[v];if(a>=n*.8)return Math.max(v,90)}return 255});
+  const pm=Math.min(...pc),al=new Uint8Array(n);
+  for(let i=0;i<n;i++){const mn=Math.min(d[i*4],d[i*4+1],d[i*4+2])/pm,a=(0.9-mn)/0.3;al[i]=a<0?0:a>1?255:a*255}
+  const out=new Uint8Array(n),st=new Int32Array(n);let sp=0;
+  const seed=i=>{if(!out[i]&&al[i]<64){out[i]=1;st[sp++]=i}};
+  for(let X=0;X<w;X++){seed(X);seed((h-1)*w+X)}for(let Y=0;Y<h;Y++){seed(Y*w);seed(Y*w+w-1)}
+  while(sp){const i=st[--sp],X=i%w,Y=(i/w)|0;if(X>0)seed(i-1);if(X<w-1)seed(i+1);if(Y>0)seed(i-w);if(Y<h-1)seed(i+w)}
+  for(let i=0;i<n;i++){
+    if(out[i]){d[i*4+3]=0;continue}
+    const X=i%w,Y=(i/w)|0;let edge=false;
+    if((X>0&&out[i-1])||(X<w-1&&out[i+1])||(Y>0&&out[i-w])||(Y<h-1&&out[i+w]))edge=true;
+    for(let ch=0;ch<3;ch++){let v=Math.min(1,d[i*4+ch]/pc[ch]);v=255*Math.pow(v,2.6);d[i*4+ch]=v}
+    d[i*4+3]=edge?Math.max(al[i],150):Math.max(al[i],110);
+  }
+  x.putImageData(id,0,0);return c.toDataURL("image/png");
+}
+async function ensureCut(m){
+  if(CUT.has(m.src))return CUT.get(m.src);
+  try{const u=await makeCut(m.src);CUT.set(m.src,u);return u}catch(e){CUT.set(m.src,m.src);return m.src}
+}
+
+/* ---- 音訊（全部由瀏覽器合成，不需要音檔） ---- */
+let AC=null,master,musG,sfxG,NB=null;
+let AUD={music:true,sfx:true,vol:.6,src:"synth"};
+try{Object.assign(AUD,JSON.parse(LS.get("mc_audio")||"{}"))}catch(e){}
+function saveAud(){try{LS.set("mc_audio",JSON.stringify(AUD))}catch(e){}}
+function audioInit(){
+  if(!AC){AC=new(window.AudioContext||window.webkitAudioContext)();master=AC.createGain();master.connect(AC.destination);
+    musG=AC.createGain();musG.gain.value=.45;musG.connect(master);sfxG=AC.createGain();sfxG.connect(master);
+    NB=AC.createBuffer(1,AC.sampleRate,AC.sampleRate);const a=NB.getChannelData(0);for(let i=0;i<a.length;i++)a[i]=Math.random()*2-1;applyVol()}
+  if(AC.state==="suspended")AC.resume();
+}
+function applyVol(){if(master)master.gain.value=AUD.vol;const el=$("#musEl");if(el)el.volume=Math.min(1,AUD.vol)}
+const mtof=m=>440*Math.pow(2,(m-69)/12);
+function tone(f,t,dur,type="sine",vol=.3,f2=null,dest){
+  const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(Math.max(1,f2),t+dur);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.008);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g);g.connect(dest||sfxG);o.start(t);o.stop(t+dur+.05);
+}
+function noise(t,dur,ft="bandpass",f0=1000,f1=null,vol=.3,dest,q=1){
+  const s=AC.createBufferSource();s.buffer=NB;const f=AC.createBiquadFilter(),g=AC.createGain();f.type=ft;f.Q.value=q;f.frequency.setValueAtTime(f0,t);if(f1)f.frequency.exponentialRampToValueAtTime(Math.max(20,f1),t+dur);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+dur);s.connect(f);f.connect(g);g.connect(dest||sfxG);s.start(t);s.stop(t+dur+.05);
+}
+const SFX={
+  start(){if(!AUD.sfx)return;audioInit();const t=AC.currentTime;[110,165,220,330].forEach((f,i)=>tone(f,t,1.6,"sine",.28/(i+1)));noise(t,.9,"lowpass",900,120,.3)},
+  click(){if(!AUD.sfx)return;audioInit();tone(660,AC.currentTime,.08,"square",.12,880)},
+  attack(type){if(!AUD.sfx)return;audioInit();const t=AC.currentTime;
+    const key={火:"火",水:"水",草:"草",冰:"冰",電:"電",幽靈:"暗",蟲:"蟲",一般:"",地面:"地",岩石:"地",超能力:"超",毒:"毒",格鬥:"武",鋼:"鋼",惡:"暗",龍:"龍",妖精:"妖",飛行:"飛"}[type]||"";
+    switch(key){
+      case"火":noise(t,.35,"lowpass",400,2200,.35);tone(90,t,.3,"sawtooth",.15,200);break;
+      case"水":for(let i=0;i<5;i++)tone(500+Math.random()*500,t+i*.05,.09,"sine",.2,1200);noise(t,.25,"bandpass",600,1800,.15);break;
+      case"草":noise(t,.3,"highpass",2000,5000,.25);noise(t+.05,.2,"bandpass",3000,1500,.15);break;
+      case"冰":[2200,3000,2600].forEach((f,i)=>tone(f,t+i*.06,.18,"triangle",.14));noise(t,.3,"highpass",5000,8000,.18);break;
+      case"電":for(let i=0;i<6;i++){noise(t+i*.04,.03,"highpass",4000,7000,.35);tone(400+Math.random()*1800,t+i*.04,.05,"square",.1)}break;
+      case"蟲":for(let i=0;i<7;i++)tone(190+(i%3)*30,t+i*.035,.06,"sawtooth",.12,230);noise(t,.3,"bandpass",1800,1000,.12);break;
+      case"地":noise(t,.4,"lowpass",250,80,.45);tone(70,t,.35,"sine",.4,40);break;
+      case"超":tone(300,t,.5,"sine",.22,1200);tone(450,t+.05,.45,"triangle",.14,1500);break;
+      case"暗":tone(110,t,.5,"sawtooth",.15,90);tone(116.5,t,.5,"sawtooth",.15,95);noise(t,.4,"lowpass",600,100,.2);break;
+      case"毒":for(let i=0;i<6;i++)tone(300+(i%2)*80,t+i*.045,.08,"sawtooth",.12,260);noise(t,.3,"bandpass",1500,700,.15);break;
+      case"武":noise(t,.12,"highpass",3000,6000,.4);tone(1200,t,.12,"triangle",.2,300);break;
+      case"鋼":tone(900,t,.2,"square",.16);tone(1350,t,.3,"triangle",.14);noise(t,.15,"highpass",5000,8000,.3);break;
+      case"龍":noise(t,.5,"lowpass",300,1200,.4);tone(70,t,.45,"sawtooth",.2,160);break;
+      case"妖":[1047,1319,1568,2093].forEach((f,i)=>tone(f,t+i*.07,.2,"sine",.16));noise(t,.3,"highpass",6000,9000,.12);break;
+      default:noise(t,.3,"bandpass",500,2500,.4,null,2);tone(80,t,.25,"sine",.3,50)}},
+  hit(){if(!AUD.sfx)return;audioInit();const t=AC.currentTime;tone(150,t,.18,"sine",.7,40);noise(t,.14,"lowpass",1800,200,.45)},
+  crit(){if(!AUD.sfx)return;audioInit();const t=AC.currentTime;tone(130,t,.3,"sine",.9,35);noise(t,.5,"highpass",3000,8000,.3);tone(300,t,.25,"sawtooth",.18,1400);noise(t,.22,"lowpass",2500,150,.6)},
+  bite(){if(!AUD.sfx)return;audioInit();const t=AC.currentTime;noise(t,.04,"highpass",3500,4000,.5);noise(t+.1,.05,"highpass",3000,3500,.55);tone(220,t+.1,.1,"square",.12,110)},
+  ko(){if(!AUD.sfx)return;audioInit();const t=AC.currentTime;tone(420,t,.9,"triangle",.4,50);noise(t+.1,.7,"lowpass",500,60,.5)},
+  heal(){if(!AUD.sfx)return;audioInit();const t=AC.currentTime;[523,659,784,1047].forEach((f,i)=>tone(f,t+i*.1,.25,"sine",.2))},
+  guard(){if(!AUD.sfx)return;audioInit();const t=AC.currentTime;tone(880,t,.1,"triangle",.28);tone(1320,t+.07,.25,"triangle",.2);noise(t,.12,"highpass",4000,6000,.2)},
+  charge(){if(!AUD.sfx)return;audioInit();const t=AC.currentTime;tone(180,t,.8,"sawtooth",.15,1300);noise(t,.7,"bandpass",400,3500,.2)},
+  miss(){if(!AUD.sfx)return;audioInit();const t=AC.currentTime;noise(t,.28,"bandpass",2600,500,.3,null,2)},
+  tick(){if(!AUD.sfx)return;audioInit();const t=AC.currentTime;tone(320,t,.14,"square",.16,140)},
+  win(){if(!AUD.sfx)return;audioInit();const t=AC.currentTime;[523,659,784,1047,784,1047,1319].forEach((f,i)=>tone(f,t+i*.13,.3,"square",.16));[262,330,392,523].forEach(f=>tone(f,t+.9,.9,"triangle",.2))}
+};
+/* 內建音樂 */
+const STG={
+  meadow:{name:"草原",bpm:124,root:45,scale:[0,2,3,5,7,8,10],lead:"triangle"},
+  sea:{name:"海底",bpm:98,root:38,scale:[0,2,3,5,7,9,10],lead:"sine"},
+  volcano:{name:"火山",bpm:150,root:40,scale:[0,1,3,5,7,8,10],lead:"sawtooth"},
+  city:{name:"夜城",bpm:136,root:36,scale:[0,2,3,5,7,8,10],lead:"square"},
+  desert:{name:"沙漠",bpm:116,root:43,scale:[0,2,3,5,7,8,11],lead:"square"}
+};
+let STAGE=LS.get("mc_stage")||"meadow",MUS=null,BGIMG=null;
+const PROG=[0,-4,3,-2],ARP=[0,2,1,2,0,2,3,2];
+function musicStop(){if(MUS){clearInterval(MUS.timer);MUS=null}const el=$("#musEl");if(el){el.pause()}$("#musBtn").textContent="▶ 音樂"}
+function musicStart(){
+  musicStop();if(!AUD.music||AUD.src==="off")return;audioInit();
+  $("#musBtn").textContent="■ 音樂";
+  if(AUD.src==="custom"&&$("#musEl").src){applyVol();$("#musEl").play().catch(()=>{});return}
+  const c=STG[STAGE]||STG.city;MUS={step:0,next:AC.currentTime+.1,c};
+  const sec=60/c.bpm/4;
+  MUS.timer=setInterval(()=>{while(MUS&&MUS.next<AC.currentTime+.15){playStep(MUS.step,MUS.next,c);MUS.next+=sec;MUS.step++}},25);
+}
+function playStep(st,t,c){
+  const bar=((st/16)|0)%4,s=st%16,r=c.root+PROG[bar],md=musG;
+  if(s%4===0||(s===10&&Math.random()<.5))tone(150,t,.13,"sine",.9,42,md);
+  if(s===4||s===12){noise(t,.12,"bandpass",1800,null,.32,md);tone(210,t,.08,"triangle",.2,120,md)}
+  if(s%2===0)noise(t,.04,"highpass",7000,null,.1,md);
+  if(s%8===6)noise(t,.14,"highpass",6000,null,.1,md);
+  if(s%2===0)tone(mtof(r+(s%8===6?0:-0)),t,.18,"sawtooth",.2,null,md);
+  const chord=[0,3,7,12];
+  if(s%2===0||Math.random()<.35)tone(mtof(r+24+chord[ARP[s%8]]),t,.11,c.lead,.1,null,md);
+  if(bar>=2&&s%4===0&&Math.random()<.8)tone(mtof(c.root+36+c.scale[rnd(0,6)]),t,.22,c.lead,.11,null,md);
+}
+
+/* ---- 舞台背景（程式繪製，會動） ---- */
+const bgc=$("#bgc"),bx=bgc.getContext("2d"),fxc=$("#fxc"),fx=fxc.getContext("2d");
+let DEC=null,DECK="",LOOP=null,PART=[];
+function rngf(seed){return()=>{seed=(seed*16807)%2147483647;return(seed-1)/2147483646}}
+function sizeCanvases(){
+  const r=$("#stage").getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1),w=Math.round(r.width*dpr),h=Math.round(r.height*dpr);
+  if(!w||!h)return false;
+  if(bgc.width!==w||bgc.height!==h){bgc.width=fxc.width=w;bgc.height=fxc.height=h;DECK=""}
+  return true;
+}
+function buildDec(W,H){
+  const R=rngf(7),a=(n,f)=>Array.from({length:n},f);
+  return{stars:a(90,()=>({x:R()*W,y:R()*H*.6,s:R()*2+.5,p:R()*6})),
+   clouds:a(6,()=>({x:R()*W,y:R()*H*.35+H*.05,s:R()*.5+.7,v:R()*8+4})),
+   bubbles:a(34,()=>({x:R()*W,y:R()*H,r:R()*6+2,v:R()*30+12,p:R()*6})),
+   embers:a(50,()=>({x:R()*W,y:R()*H,r:R()*3+1,v:R()*50+20,p:R()*6})),
+   dust:a(40,()=>({x:R()*W,y:R()*H*.8,r:R()*2+1,v:R()*40+15})),
+   bld:a(16,(_,i)=>({x:i*W/14-W*.03,w:W/14*(.8+R()*.5),h:H*(.18+R()*.34),win:a(40,()=>R())})),
+   tufts:a(60,()=>({x:R()*W,y:R()*.14+.8,h:R()*10+4})),
+   weeds:a(8,(_,i)=>({x:(i%2?W*.04:W*.9)+(i>>1)*W*.035,h:H*(.18+R()*.18),p:R()*6})),
+   cacti:a(5,()=>({x:R()*W,h:H*(.08+R()*.08)}))};
+}
+function hills(x,W,H,t,base,amp,col,sp,fr){x.fillStyle=col;x.beginPath();x.moveTo(0,H);for(let i=0;i<=W;i+=12)x.lineTo(i,H*base+Math.sin(i*fr+t*sp)*amp*H);x.lineTo(W,H);x.fill()}
+function drawBg(t){
+  const W=bgc.width,H=bgc.height,x=bx;if(!W)return;
+  if(DECK!==W+"x"+H){DEC=buildDec(W,H);DECK=W+"x"+H}
+  const D=DEC,u=H/540;
+  if(STAGE==="custom"&&BGIMG){const s=Math.max(W/BGIMG.width,H/BGIMG.height);x.drawImage(BGIMG,(W-BGIMG.width*s)/2,(H-BGIMG.height*s)/2,BGIMG.width*s,BGIMG.height*s);
+    const g=x.createLinearGradient(0,H*.6,0,H);g.addColorStop(0,"#0000");g.addColorStop(1,"#0007");x.fillStyle=g;x.fillRect(0,0,W,H);return}
+  const g=x.createLinearGradient(0,0,0,H);
+  if(STAGE==="meadow"){g.addColorStop(0,"#5db6ff");g.addColorStop(.6,"#bfe6ff");g.addColorStop(1,"#ffe9b8");x.fillStyle=g;x.fillRect(0,0,W,H);
+    const sg=x.createRadialGradient(W*.8,H*.2,0,W*.8,H*.2,H*.3);sg.addColorStop(0,"#fff6c8");sg.addColorStop(.25,"#ffe27a");sg.addColorStop(1,"#ffe27a00");x.fillStyle=sg;x.fillRect(0,0,W,H);
+    x.fillStyle="#ffffffd9";D.clouds.forEach(c=>{const cx=((c.x+t*c.v)%(W+400*u))-200*u;[[0,0,38],[34,-10,30],[-34,-6,28],[64,4,24],[-62,6,22]].forEach(([dx,dy,r])=>{x.beginPath();x.arc(cx+dx*u*c.s,c.y+dy*u*c.s,r*u*c.s,0,7);x.fill()})});
+    hills(x,W,H,t,.58,.05,"#8fd68b",.15,.004);hills(x,W,H,t,.66,.045,"#62bd62",.2,.006);hills(x,W,H,t,.74,.035,"#43a14d",.25,.008);
+    x.fillStyle="#3b8a3a";x.fillRect(0,H*.8,W,H*.2);x.strokeStyle="#2f7530";x.lineWidth=2*u;D.tufts.forEach(f=>{const y=H*f.y+(f.y-.8)*H*2;x.beginPath();x.moveTo(f.x,y);x.lineTo(f.x-3*u,y-f.h*u);x.moveTo(f.x,y);x.lineTo(f.x+3*u,y-f.h*u);x.stroke()})}
+  else if(STAGE==="sea"){g.addColorStop(0,"#1672b8");g.addColorStop(.6,"#0a3f78");g.addColorStop(1,"#021a36");x.fillStyle=g;x.fillRect(0,0,W,H);
+    for(let i=0;i<6;i++){const rx=W*(.1+i*.17)+Math.sin(t*.4+i)*W*.03,rg=x.createLinearGradient(rx,0,rx,H);rg.addColorStop(0,"#bfe9ff30");rg.addColorStop(1,"#bfe9ff00");x.fillStyle=rg;x.beginPath();x.moveTo(rx-20*u,0);x.lineTo(rx+20*u,0);x.lineTo(rx+120*u+Math.sin(t*.3+i)*30*u,H);x.lineTo(rx-60*u,H);x.fill()}
+    x.fillStyle="#d8b87a";x.fillRect(0,H*.84,W,H*.16);x.fillStyle="#c4a265";for(let i=0;i<W;i+=40*u){x.beginPath();x.ellipse(i+10*u,H*.86,22*u,4*u,0,0,7);x.fill()}
+    x.strokeStyle="#2faa6a";x.lineWidth=7*u;x.lineCap="round";D.weeds.forEach(w=>{x.beginPath();x.moveTo(w.x,H*.86);for(let k=1;k<=6;k++)x.lineTo(w.x+Math.sin(t*1.2+w.p+k*.6)*14*u*k/3,H*.86-w.h*k/6);x.stroke()});
+    x.fillStyle="#ffffff55";D.bubbles.forEach(b=>{const y=H-((b.p*50+t*b.v*u)%(H+20));x.beginPath();x.arc(b.x+Math.sin(t+b.p)*8*u,y,b.r*u,0,7);x.fill()})}
+  else if(STAGE==="volcano"){g.addColorStop(0,"#1c0606");g.addColorStop(.55,"#7a1f12");g.addColorStop(.85,"#ff8a2a");g.addColorStop(1,"#ffb347");x.fillStyle=g;x.fillRect(0,0,W,H);
+    x.fillStyle="#2a100c";x.beginPath();x.moveTo(W*.18,H*.86);x.lineTo(W*.44,H*.3);x.lineTo(W*.56,H*.3);x.lineTo(W*.82,H*.86);x.fill();
+    const lg=x.createRadialGradient(W*.5,H*.3,0,W*.5,H*.3,H*.28);lg.addColorStop(0,"#ffd27acc");lg.addColorStop(1,"#ff6a2a00");x.fillStyle=lg;x.fillRect(0,0,W,H);
+    x.strokeStyle="#ff7a1a";x.lineWidth=4*u;x.beginPath();x.moveTo(W*.47,H*.32);x.bezierCurveTo(W*.45,H*.5,W*.4,H*.6,W*.36,H*.84);x.moveTo(W*.53,H*.32);x.bezierCurveTo(W*.56,H*.5,W*.6,H*.62,W*.64,H*.84);x.stroke();
+    x.fillStyle="#1d0b09";x.fillRect(0,H*.84,W,H*.16);x.strokeStyle=`rgba(255,${120+Math.sin(t*2)*40|0},30,.9)`;x.lineWidth=3*u;for(let i=0;i<9;i++){x.beginPath();x.moveTo(i*W/8,H*.86);x.lineTo(i*W/8+30*u,H*.9);x.lineTo(i*W/8+8*u,H*.96);x.stroke()}
+    D.embers.forEach(e=>{const y=H-((e.p*80+t*e.v*u)%(H+20));x.fillStyle=`rgba(255,${150+Math.sin(t*5+e.p)*60|0},40,.85)`;x.beginPath();x.arc(e.x+Math.sin(t+e.p)*14*u,y,e.r*u,0,7);x.fill()})}
+  else if(STAGE==="city"){g.addColorStop(0,"#070723");g.addColorStop(.7,"#32195a");g.addColorStop(1,"#6a2a7a");x.fillStyle=g;x.fillRect(0,0,W,H);
+    D.stars.forEach(s=>{x.fillStyle=`rgba(255,255,255,${.4+.6*Math.abs(Math.sin(t*1.5+s.p))})`;x.fillRect(s.x,s.y,s.s*u,s.s*u)});
+    x.fillStyle="#fff6d6";x.beginPath();x.arc(W*.78,H*.2,H*.08,0,7);x.fill();x.fillStyle="#e3d6a8";[[.76,.18,.012],[.8,.23,.018],[.74,.23,.01]].forEach(([a,b,r])=>{x.beginPath();x.arc(W*a,H*b,H*r,0,7);x.fill()});
+    D.bld.forEach(b=>{const top=H*.84-b.h;x.fillStyle="#150d2c";x.fillRect(b.x,top,b.w,b.h);b.win.forEach((v,i)=>{const cx=b.x+6*u+(i%5)*(b.w-12*u)/5,cy=top+8*u+((i/5)|0)*16*u;if(cy<H*.82&&v>.45){x.fillStyle=v>.9?"#ff5ad0":"#ffd86a";x.fillRect(cx,cy,5*u,7*u)}})});
+    x.fillStyle="#0e0820";x.fillRect(0,H*.84,W,H*.16);x.fillStyle="#ff4fd8";x.fillRect(0,H*.84,W,3*u)}
+  else{g.addColorStop(0,"#ff8a4c");g.addColorStop(.6,"#ffc27a");g.addColorStop(1,"#ffe9b0");x.fillStyle=g;x.fillRect(0,0,W,H);
+    const sg=x.createRadialGradient(W*.5,H*.4,0,W*.5,H*.4,H*.3);sg.addColorStop(0,"#fff2c4");sg.addColorStop(.5,"#ffd36a");sg.addColorStop(1,"#ffd36a00");x.fillStyle=sg;x.fillRect(0,0,W,H);
+    hills(x,W,H,t,.62,.04,"#eab56c",.1,.003);hills(x,W,H,t,.7,.05,"#d99a50",.15,.005);hills(x,W,H,t,.78,.03,"#c5823b",.2,.007);
+    x.fillStyle="#b8742f";x.fillRect(0,H*.82,W,H*.18);
+    x.strokeStyle="#4f8a3a";x.lineWidth=8*u;x.lineCap="round";D.cacti.forEach(c=>{const y=H*.84;x.beginPath();x.moveTo(c.x,y);x.lineTo(c.x,y-c.h);x.moveTo(c.x,y-c.h*.5);x.lineTo(c.x+14*u,y-c.h*.5);x.lineTo(c.x+14*u,y-c.h*.75);x.stroke()});
+    x.fillStyle="#ffe7b855";D.dust.forEach(d=>{x.beginPath();x.arc((d.x+t*d.v*u)%W,d.y+Math.sin(t+d.x)*10*u,d.r*u,0,7);x.fill()})}
+}
+/* 粒子 */
+function burst(px,py,color,n,crit){
+  for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,sp=(crit?380:240)*(.3+Math.random());
+    PART.push({x:px,y:py,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-80,life:0,max:.5+Math.random()*.5,c:color,s:(crit?9:6)*(.5+Math.random()),g:520})}
+}
+function confetti(){const W=fxc.width;for(let i=0;i<110;i++)PART.push({x:Math.random()*W,y:-20,vx:(Math.random()-.5)*160,vy:80+Math.random()*180,life:0,max:2.8+Math.random()*1.5,c:["#ff4d6d","#ffd23f","#4cc45a","#3aa0ff","#b06bff"][i%5],s:7+Math.random()*7,g:60,rect:true})}
+function drawParts(dt){
+  const x=fx;x.clearRect(0,0,fxc.width,fxc.height);const k=fxc.height/540;
+  PART=PART.filter(p=>(p.life+=dt)<p.max);
+  PART.forEach(p=>{p.vy+=p.g*dt*k;p.x+=p.vx*dt*k;p.y+=p.vy*dt*k;x.globalAlpha=Math.max(0,1-p.life/p.max);x.fillStyle=p.c;const s=p.s*k;
+    if(p.rect){x.save();x.translate(p.x,p.y);x.rotate(p.life*6);x.fillRect(-s/2,-s/3,s,s*.6);x.restore()}else{x.beginPath();x.arc(p.x,p.y,s,0,7);x.fill()}});
+  x.globalAlpha=1;
+}
+function loopStart(){
+  if(LOOP)return;let last=performance.now();
+  const f=now=>{LOOP=requestAnimationFrame(f);const dt=Math.min(.05,(now-last)/1000);last=now;if(sizeCanvases()){drawBg(now/1000);drawParts(dt)}};
+  LOOP=requestAnimationFrame(f);
+}
+function loopStop(){if(LOOP){cancelAnimationFrame(LOOP);LOOP=null}}
+
+/* ---- 對戰 ---- */
+function fillSel(){
+  const o=M.map(m=>`<option value="${esc(m.id)}">${esc(m.name)}（${cp(m).toLocaleString()}）</option>`).join("");
+  const a=$("#selA").value,b=$("#selB").value;$("#selA").innerHTML=o;$("#selB").innerHTML=o;
+  if(M.find(m=>m.id===a))$("#selA").value=a;if(M.find(m=>m.id===b))$("#selB").value=b;else if(M[1])$("#selB").value=M[1].id;
+  showArena();
+}
+const get=id=>M.find(m=>m.id===id);
+const FLIP={L:false,R:true};
+const TCOL={草:"#4cc45a",水:"#3aa0ff",火:"#ff6a2b",冰:"#9fe8ff",電:"#ffe44d",幽靈:"#8f6bd6",蟲:"#a8c93a",一般:"#d8d2c4",地面:"#c79a55",岩石:"#a08a6a",超能力:"#ff6fb1",毒:"#b6ff3a",格鬥:"#ff7a3d",鋼:"#b9c4d0",惡:"#7a5c8c",龍:"#5a6bff",妖精:"#ffb3e6",飛行:"#8fd0ff"};
+function fighterHTML(m,side){
+  const src=CUT.get(m.src)||m.src,inner=m.mouth?mouthHTML({...m,vs:src}):`<img class="spr" src="${esc(src)}" alt="${esc(m.name)}">`;
+  return `<div class="fx ${side}${FLIP[side]?" flip":""}" id="f${side}"><div class="tag">${esc(m.name)}・${esc(typesOf(m).join('/'))}・戰力 ${cp(m).toLocaleString()}<span class="stt"></span></div><div class="hpb"><i></i></div><div class="im">${inner}</div></div>`;
+}
+let fighting=false;
+async function showArena(){
+  if(fighting)return;
+  const a=get($("#selA").value),b=get($("#selB").value);if(!a||!b)return;
+  await Promise.all([ensureCut(a),ensureCut(b)]);if(fighting)return;
+  $("#fgt").innerHTML=fighterHTML(a,"L")+fighterHTML(b,"R");previewMoves(a,b);
+}
+$("#selA").onchange=$("#selB").onchange=()=>{SFX.click();showArena()};
+$("#rnd").onclick=()=>{SFX.click();$("#selA").value=M[rnd(0,M.length-1)].id;$("#selB").value=M[rnd(0,M.length-1)].id;showArena()};
+$("#flipA").onclick=()=>{FLIP.L=!FLIP.L;showArena()};$("#flipB").onclick=()=>{FLIP.R=!FLIP.R;showArena()};
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const st$=()=>$("#stage").getBoundingClientRect();
+function ctr(el){const s=st$(),r=el.getBoundingClientRect(),k=fxc.width/s.width;return{x:(r.left+r.width/2-s.left)*k,y:(r.top+r.height/2-s.top)*k,cx:r.left+r.width/2-s.left,cy:r.top+r.height/2-s.top}}
+function banner(txt,ms=900,size){const b=$("#banner");b.textContent=txt;b.style.fontSize=size||"";b.animate([{opacity:0,transform:"scale(2.4)"},{opacity:1,transform:"scale(1)",offset:.2},{opacity:1,transform:"scale(1)",offset:.75},{opacity:0,transform:"scale(.9)"}],{duration:ms,fill:"forwards"})}
+function flash(a=.6){$("#flash").animate([{opacity:a},{opacity:0}],{duration:260})}
+function shake(p){$("#stage").animate([{transform:"translate(0,0)"},{transform:`translate(${-p}px,${p/2}px)`},{transform:`translate(${p}px,${-p/2}px)`},{transform:`translate(${-p/2}px,0)`},{transform:"translate(0,0)"}],{duration:340})}
+function floatText(cx,cy,txt,crit){const d=document.createElement("div");d.className="dmg"+(crit?" crit":"");d.textContent=txt;d.style.left=cx+"px";d.style.top=cy+"px";$("#stage").appendChild(d);
+  d.animate([{transform:"translate(-50%,0) scale(.6)",opacity:0},{transform:"translate(-50%,-30px) scale(1.2)",opacity:1,offset:.2},{transform:"translate(-50%,-90px) scale(1)",opacity:0}],{duration:crit?1200:900}).onfinish=()=>d.remove()}
+function ring(cx,cy,color,big){const r=document.createElement("div");r.className="ring";r.style.left=cx+"px";r.style.top=cy+"px";r.style.borderColor=color;$("#stage").appendChild(r);
+  r.animate([{width:"0px",height:"0px",transform:"translate(-50%,-50%)",opacity:1},{width:(big?300:180)+"px",height:(big?300:180)+"px",transform:"translate(-50%,-50%)",opacity:0}],{duration:450}).onfinish=()=>r.remove()}
+let pendingMove=null;
+/* 招式：每隻怪獸 7 招，不限次數，可任意使用 */
+const EFF={
+ 火:{burn:3,txt:"灼燒：每回合受 5% 最大 HP 傷害，3 回合"},
+ 水:{atkDown:3,txt:"降低對方攻擊 25%，3 回合"},
+ 草:{selfHeal:.10,txt:"自己回復 10% 最大 HP"},
+ 冰:{atkDown:3,pow:1.45,txt:"凍傷：威力稍高，降低對方攻擊 25%，3 回合"},
+ 電:{critRate:.5,txt:"暴擊率 50%"},
+ 幽靈:{atkDown:3,txt:"嚇人：降低對方攻擊 25%，3 回合"},
+ 蟲:{drain:.25,txt:"吸取：回復傷害的 25%"},
+ 一般:{pow:1.55,txt:"威力穩定偏高"},
+ 地面:{pierce:.6,txt:"破防：無視 60% 防禦"},
+ 岩石:{pow:1.6,accm:-12,txt:"威力特別大，命中略低"},
+ 超能力:{sure:true,txt:"必中"},
+ 毒:{poison:3,txt:"中毒：每回合受 6% 最大 HP 傷害，3 回合"},
+ 格鬥:{pow:1.5,critRate:.3,txt:"威力高，暴擊率 30%"},
+ 鋼:{pierce:.8,txt:"破甲：無視 80% 防禦"},
+ 惡:{drain:.35,txt:"吸血：回復傷害的 35%"},
+ 龍:{pow:1.7,accm:-15,txt:"威力極大，命中較低"},
+ 妖精:{sure:true,selfHeal:.08,txt:"必中，並回復自己 8% 最大 HP"},
+ 飛行:{pow:1.35,critRate:.25,sure:true,txt:"必中，暴擊率 25%（從空中俯衝）"}
+};
+function movesOf(m){
+  const T=typesOf(m),nm=m.moveNames||{},ts0=TYPE_SKILL[T[0]];
+  const elem=i=>{const t=T[i],ts=TYPE_SKILL[t],e=EFF[t]||{},key=i?"elem"+(i+1):"elem";
+    return{id:key,kind:"atk",type:t,name:nm[key]||ts.elem,pow:e.pow||1.35,acc:e.sure?100:90+(e.accm||0),hits:1,eff:e,txt:"["+t+"] "+(e.txt||"")}};
+  return[
+    {id:"basic",kind:"atk",name:nm.basic||"普通攻擊",pow:1,acc:100,hits:1,txt:"穩定的基本攻擊"},
+    {id:"combo",kind:"atk",name:nm.combo||"連擊",pow:.6,acc:85,hits:2,txt:"連續攻擊 2 次"},
+    ...T.map((_,i)=>elem(i)),
+    {id:"ult",kind:"atk",type:T[0],name:m.skill||ts0.ults[0],pow:2.1,acc:70,hits:1,txt:"["+T[0]+"] 威力最大，但可能打偏"},
+    {id:"guard",kind:"guard",name:nm.guard||"防禦",txt:"下一次受到的傷害減半"},
+    {id:"charge",kind:"charge",name:nm.charge||"蓄力",txt:"這回合不攻擊，下一次攻擊威力 ×1.8"},
+    {id:"heal",kind:"heal",name:nm.heal||"回復",txt:"回復 25% 最大 HP"}
+  ];
+}
+const blog=(t,k)=>{const p=document.createElement("p");p.innerHTML=k?`<span class="k">${t}</span>`:t;$("#log").appendChild(p);$("#log").scrollTop=1e9};
+function setBar(s){const bar=s.el.querySelector(".hpb i"),pc=Math.max(0,s.hp/s.max*100);bar.style.width=pc+"%";bar.style.background=pc<30?"linear-gradient(#ff9a8a,#e6342a)":""}
+function updSt(s){
+  s.el.querySelector(".stt").textContent=(s.burn>0?" 🔥":"")+(s.poison>0?" ☠️":"")+(s.atkDown>0?" ⬇️":"")+(s.guard?" 🛡":"")+(s.charge>1?" ⚡":"");
+  s.el.classList.toggle("guarding",!!s.guard);s.el.classList.toggle("charged",s.charge>1);
+}
+function renderSide(i,moves,enabled,title,active){
+  const L=i?"R":"L";$("#mvt"+L).textContent=title;$("#mvp"+L).classList.toggle("active",!!active);
+  $("#mvs"+L).innerHTML=moves.map((mv,k)=>{
+    const cls=mv.kind==="atk"?"kindA":mv.kind==="heal"?"kindH":"kindS";
+    const meta=mv.kind==="atk"?`威力 ${Math.round(mv.pow*100)}%${mv.hits>1?"×"+mv.hits:""}・命中 ${mv.acc}%`:"輔助";
+    return `<button class="mv ${cls}" data-i="${k}" ${enabled?"":"disabled"}><span class="k">${k+1}</span><b>${esc(mv.name)}</b><small>${meta}</small><i>${esc(mv.txt)}</i></button>`}).join("");
+}
+function renderBoard(S,turn,enabled,text){
+  [0,1].forEach(i=>renderSide(i,S[i].moves,enabled&&i===turn,i===turn?`${i?"右":"左"}方 ${S[i].m.name}：${text}`:`${i?"右":"左"}方 ${S[i].m.name}（${turn<0?"結束":"等待中"}）`,i===turn))
+}
+function previewMoves(a,b){
+  renderSide(0,movesOf(a),false,`左方 ${a.name}：按「開打」後輪到你選招`,false);renderSide(1,movesOf(b),false,`右方 ${b.name}：按「開打」後輪到你選招`,false);
+}
+function askMove(S,turn,text){return new Promise(res=>{renderBoard(S,turn,true,text);pendingMove=i=>{pendingMove=null;res(i)}})}
+$("#mvboard").addEventListener("click",e=>{const b=e.target.closest(".mv");if(b&&!b.disabled&&pendingMove)pendingMove(+b.dataset.i)});
+document.addEventListener("keydown",e=>{if(pendingMove&&/^[1-9]$/.test(e.key)&&!/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName))pendingMove(+e.key-1)});
+function aiPick(s,foe,moves){
+  const hp=s.hp/s.max,charged=s.charge>1;
+  const w=moves.map(mv=>{
+    const id=String(mv.id);
+    if(id==="basic")return charged?1:3;
+    if(id==="combo")return charged?.6:2.5;
+    if(id.startsWith("elem"))return 3;
+    if(id==="ult")return charged?4:2;
+    if(id==="guard")return s.guard||charged?0:(foe.charge>1?3:1);
+    if(id==="charge")return charged?0:1.2;
+    if(id==="heal")return charged?(hp<.3?1:0):(hp<.4?3.5:hp<.7?.8:.1);
+    return 1});
+  const t=w.reduce((a,b)=>a+b,0);let r=Math.random()*t;for(let i=0;i<w.length;i++){r-=w[i];if(r<=0)return i}return 0;
+}
+async function tickStatus(s){
+  for(const [key,rate,ic,col] of [["burn",.05,"🔥","#ff9a3c"],["poison",.06,"☠️","#b6ff3a"]]){
+    if(s[key]>0&&s.hp>0){const d=Math.max(1,Math.round(s.max*rate));s.hp=Math.max(0,s.hp-d);s[key]--;setBar(s);SFX.tick();
+      const c=ctr(s.el.querySelector(".im"));burst(c.x,c.y,col,10,false);floatText(c.cx,c.cy-30,`${ic}${d}`,false);blog(`${esc(s.m.name)} 受到${key==="burn"?"灼燒":"中毒"}傷害 ${d}`);updSt(s);await sleep(550)}
+  }
+}
+async function doMove(at,df,mv,dirIdx){
+  const mtype=mv.type||at.m.type,col=TCOL[mtype]||"#fff",dir=dirIdx?-1:1,ac=ctr(at.el.querySelector(".im"));
+  if(mv.kind==="guard"){at.guard=true;SFX.guard();ring(ac.cx,ac.cy,"#4ea8de",false);floatText(ac.cx,ac.cy-40,"🛡 防禦",false);blog(`${esc(at.m.name)} 擺出防禦姿勢`);updSt(at);await sleep(700);return}
+  if(mv.kind==="charge"){at.charge=1.8;SFX.charge();burst(ac.x,ac.y,"#ffd23f",30,true);ring(ac.cx,ac.cy,"#ffd23f",true);floatText(ac.cx,ac.cy-40,"⚡ 蓄力",false);blog(`${esc(at.m.name)} 正在蓄力，下一次攻擊更強`);updSt(at);await sleep(800);return}
+  if(mv.kind==="heal"){const amt=Math.min(at.max-at.hp,Math.round(at.max*.25));at.hp+=amt;setBar(at);SFX.heal();burst(ac.x,ac.y,"#7cff8a",34,false);ring(ac.cx,ac.cy,"#7cff8a",false);floatText(ac.cx,ac.cy-40,`+${amt}`,false);blog(`${esc(at.m.name)} 回復了 ${amt} HP`);await sleep(800);return}
+  // 攻擊類
+  const big=mv.id==="ult"||String(mv.id).startsWith("elem");
+  if(big)banner(`【${mv.name}】`,1000,"7cqw");
+  const dx=(ctr(df.el).cx-ctr(at.el).cx)*.62;
+  at.el.animate([{transform:"translateX(0) scale(1)"},{transform:`translateX(${-dir*30}px) scale(.96)`,offset:.22},{transform:`translateX(${dx}px) scale(1.12)`,offset:.5},{transform:"translateX(0) scale(1)"}],{duration:big?760:640,easing:"ease-in-out"});
+  SFX.attack(mtype);const mw=at.el.querySelector(".mw");if(mw){pulse(mw,"bite");setTimeout(SFX.bite,big?280:220)}
+  await sleep(big?400:330);
+  const e=mv.eff||{},cc=ctr(df.el.querySelector(".im"));
+  if(!(e.sure)&&Math.random()*100>=mv.acc){
+    df.el.animate([{transform:"translateX(0)"},{transform:`translateX(${dir*60}px)`,offset:.4},{transform:"translateX(0)"}],{duration:420});
+    SFX.miss();floatText(cc.cx,cc.cy-40,"MISS",false);blog(`${esc(at.m.name)} 的【${esc(mv.name)}】被閃開了！`);at.charge=1;updSt(at);await sleep(600);return}
+  let total=0,anyCrit=false;
+  for(let k=0;k<mv.hits;k++){
+    const crit=Math.random()<(e.critRate||.12);if(crit)anyCrit=true;
+    let d=at.m.atk*(at.atkDown>0?.75:1)*mv.pow*(at.charge>1?at.charge:1)*(.85+Math.random()*.3)-df.m.def*.5*(1-(e.pierce||0));
+    d=Math.max(1,Math.round(d));if(crit)d=Math.round(d*1.8);if(df.guard)d=Math.max(1,Math.ceil(d/2));
+    df.hp=Math.max(0,df.hp-d);total+=d;setBar(df);
+    const bg=crit||mv.id==="ult";crit?SFX.crit():SFX.hit();burst(cc.x,cc.y,col,bg?46:24,bg);burst(cc.x,cc.y,"#fff",bg?14:8,bg);ring(cc.cx,cc.cy,col,bg);flash(bg?.7:.3);shake(bg?14:6);
+    floatText(cc.cx+(k?30:0),cc.cy-40-(k?25:0),crit?`${d}！`:d,crit);
+    df.el.querySelector(".im").animate([{filter:"brightness(3) saturate(0)",transform:`translateX(${dir*18}px)`},{transform:`translateX(${-dir*8}px)`,offset:.4},{transform:"translateX(0)"}],{duration:420});
+    if(df.hp<=0)break;if(k<mv.hits-1)await sleep(280);
+  }
+  blog(`${esc(at.m.name)} 使用【${esc(mv.name)}】${mv.hits>1?`連擊 ${mv.hits} 次`:""}，共造成 ${total} 傷害${anyCrit?"（暴擊！）":""}${df.guard?"（被防禦減半）":""}`,anyCrit||mv.id==="ult");
+  df.guard=false;at.charge=1;
+  if(df.hp>0){
+    if(e.burn){df.burn=e.burn;blog(`${esc(df.m.name)} 被灼燒了`)}
+    if(e.poison){df.poison=e.poison;blog(`${esc(df.m.name)} 中毒了`)}
+    if(e.atkDown){df.atkDown=e.atkDown;blog(`${esc(df.m.name)} 的攻擊下降了`)}
+  }
+  if(e.drain&&total>0){const h=Math.min(at.max-at.hp,Math.round(total*e.drain));if(h>0){at.hp+=h;const a2=ctr(at.el.querySelector(".im"));burst(a2.x,a2.y,"#7cff8a",14,false);floatText(a2.cx,a2.cy-40,`+${h}`,false);blog(`${esc(at.m.name)} 吸血回復 ${h} HP`)}}
+  if(e.selfHeal){const h=Math.min(at.max-at.hp,Math.round(at.max*e.selfHeal));if(h>0){at.hp+=h;const a2=ctr(at.el.querySelector(".im"));burst(a2.x,a2.y,"#7cff8a",14,false);floatText(a2.cx,a2.cy-40,`+${h}`,false);blog(`${esc(at.m.name)} 回復 ${h} HP`)}}
+  setBar(at);setBar(df);updSt(at);updSt(df);
+  await sleep(big?700:550);
+}
+async function fight(){
+  if(fighting)return;const A=get($("#selA").value),B=get($("#selB").value);
+  if(!A||!B||A===B){alert("請選兩隻不同的怪獸");return}
+  audioInit();await showArena();fighting=true;$("#fight").disabled=true;$("#log").innerHTML="";
+  const mk=(m,id)=>({m,hp:m.hp,max:m.hp,el:$(id),guard:false,charge:1,burn:0,poison:0,atkDown:0,moves:movesOf(m)});
+  const S=[mk(A,"#fL"),mk(B,"#fR")],ctl=[$("#ctlL").value,$("#ctlR").value];
+  SFX.start();if(AUD.music)musicStart();banner("FIGHT！",1100);await sleep(1200);
+  let turn=A.spd>=B.spd?0:1;renderBoard(S,turn,false,"準備中…");blog(`${esc(S[turn].m.name)} 速度較快，先攻！`);
+  let rounds=0;
+  while(S[0].hp>0&&S[1].hp>0&&battleOn&&rounds<80){
+    rounds++;const at=S[turn],df=S[1-turn];
+    await tickStatus(at);if(at.hp<=0)break;
+    let idx;
+    if(ctl[turn]==="p"){idx=await askMove(S,turn,"輪到你，選一個招式");if(idx<0)break}
+    else{renderBoard(S,turn,false,"電腦思考中…");await sleep(650);idx=aiPick(at,df,at.moves)}
+    renderBoard(S,turn,false,`使用【${at.moves[idx].name}】`);
+    await doMove(at,df,at.moves[idx],turn);
+    if(at.atkDown>0)at.atkDown--;updSt(at);
+    turn=1-turn;
+  }
+  if(!battleOn){fighting=false;$("#fight").disabled=false;return}
+  renderBoard(S,-1,false,"戰鬥結束");
+  const wi=S[0].hp<=0?1:S[1].hp<=0?0:(S[0].hp/S[0].max>=S[1].hp/S[1].max?0:1),w=S[wi],l=S[1-wi];
+  if(rounds>=80&&S[0].hp>0&&S[1].hp>0)blog("回合數已達上限，以剩餘 HP 比例判定勝負");
+  l.el.animate([{transform:"rotate(0) translateY(0)",opacity:1,filter:"none"},{transform:`rotate(${wi?-80:80}deg) translateY(40px)`,opacity:.25,filter:"grayscale(1)"}],{duration:900,fill:"forwards",easing:"ease-in"});
+  SFX.ko();banner("K.O.！",1200,"12cqw");shake(18);await sleep(1300);
+  w.el.animate([{transform:"translateY(0)"},{transform:"translateY(-60px) scale(1.1)"},{transform:"translateY(0)"},{transform:"translateY(-40px)"},{transform:"translateY(0)"}],{duration:1100});
+  SFX.win();confetti();banner(`🏆 ${w.m.name} 獲勝`,2600,"6.5cqw");
+  w.m.wins=(w.m.wins||0)+1;save();blog(`🏆 ${esc(w.m.name)} 獲勝！（累計 ${w.m.wins} 勝）`,true);
+  setTimeout(()=>{if(MUS||!$("#musEl").paused)musicStop()},3500);
+  fighting=false;$("#fight").disabled=false;renderRank();renderDex();
+}
+$("#fight").onclick=fight;
+let battleOn=false;
+function enterBattle(){battleOn=true;loopStart();showArena()}
+function leaveBattle(){battleOn=false;if(pendingMove)pendingMove(-1);loopStop();musicStop()}
+function pulse(el,c){if(!el)return;el.classList.remove(c);void el.offsetWidth;el.classList.add(c);setTimeout(()=>el.classList.remove(c),700)}
+/* 場景 / 音樂 / 音量 設定 */
+try{const c=JSON.parse(LS.get("mc_ctl")||"{}");if(c.L)$("#ctlL").value=c.L;if(c.R)$("#ctlR").value=c.R}catch(e){}
+["#ctlL","#ctlR"].forEach(i=>$(i).onchange=()=>{try{LS.set("mc_ctl",JSON.stringify({L:$("#ctlL").value,R:$("#ctlR").value}))}catch(e){}});
+$("#stageSel").value=STAGE;
+$("#stageSel").onchange=e=>{STAGE=e.target.value;try{LS.set("mc_stage",STAGE)}catch(_){}DECK="";if(MUS)musicStart()};
+function loadBgPhoto(f){if(!f)return;const im=new Image();im.onload=()=>{const k=Math.min(1,1280/im.width),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);
+  BGIMG=c;try{LS.set("mc_bg",c.toDataURL("image/jpeg",.72))}catch(_){toast("背景太大，只能這次使用（重新整理會消失）")}
+  $("#stageSel").value=STAGE="custom";try{LS.set("mc_stage","custom")}catch(_){}toast("已套用自訂背景")};im.src=URL.createObjectURL(f)}
+$("#bgFile").onchange=e=>{loadBgPhoto(e.target.files[0]);e.target.value=""};
+try{const s=LS.get("mc_bg");if(s){const i=new Image();i.onload=()=>{BGIMG=i};i.src=s}}catch(e){}
+$("#musFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const el=$("#musEl");el.src=URL.createObjectURL(f);AUD.src="custom";$("#musSel").value="custom";saveAud();toast("已載入音樂："+f.name);e.target.value=""};
+$("#musSel").value=AUD.src==="custom"?"synth":AUD.src;
+$("#musSel").onchange=e=>{AUD.src=e.target.value;saveAud();if(MUS||!$("#musEl").paused)musicStart()};
+$("#musBtn").onclick=()=>{if(MUS||!$("#musEl").paused)musicStop();else{AUD.music=true;musicStart()}};
+$("#vol").value=Math.round(AUD.vol*100);$("#vol").oninput=e=>{AUD.vol=e.target.value/100;saveAud();applyVol()};
+$("#sfxOn").checked=AUD.sfx;$("#sfxOn").onchange=e=>{AUD.sfx=e.target.checked;saveAud();SFX.click()};
+$("#sfxTest").onclick=()=>{audioInit();const L=["start","hit","crit","bite","ko","win"],o=AUD.sfx;AUD.sfx=true;L.forEach((n,i)=>setTimeout(()=>SFX[n](),i*900));setTimeout(()=>{AUD.sfx=o},L.length*900)};
+function renderRank(){
+  const L=[...M].filter(m=>m.wins).sort((a,b)=>b.wins-a.wins).slice(0,5);
+  $("#rank").innerHTML=L.length?L.map(m=>`<li>${esc(m.name)} — ${m.wins} 勝</li>`).join(""):"<li class='sub'>還沒有戰績</li>";
+}
+
+/* ---- 透明卡面（圖鑑） ---- */
+let CLEAR=false;try{CLEAR=LS.get("mc_clear")==="1"}catch(e){}
+function applyClear(){document.body.classList.toggle("clear",CLEAR);$("#clearT").textContent="卡面："+(CLEAR?"透明":"完整");
+  if(CLEAR){const miss=M.filter(m=>!CUT.has(m.src));if(miss.length)Promise.all(miss.map(ensureCut)).then(renderDex)}}
+$("#clearT").onclick=()=>{CLEAR=!CLEAR;try{LS.set("mc_clear",CLEAR?"1":"0")}catch(e){}applyClear();renderDex()};
+
+/* ---- 新增 / 裁切 ---- */
+const cv=$("#cv"),cx=cv.getContext("2d");
+let RAW=null,SRC=null,boxes=[],sc=1,dragS=null,dragNow=null;
+function loadPhoto(f){
+  if(!f)return;const im=new Image();
+  im.onload=()=>{URL.revokeObjectURL(im.src);const k=Math.min(1,1600/Math.max(im.width,im.height));
+    RAW=document.createElement("canvas");RAW.width=Math.round(im.width*k);RAW.height=Math.round(im.height*k);
+    RAW.getContext("2d").drawImage(im,0,0,RAW.width,RAW.height);processPhoto()};
+  im.onerror=()=>alert("這張照片讀不出來，請換一張（建議 JPG 或 PNG）");
+  im.src=URL.createObjectURL(f);
+}
+$("#cam").onchange=e=>{loadPhoto(e.target.files[0]);e.target.value=""};
+$("#file").onchange=e=>{loadPhoto(e.target.files[0]);e.target.value=""};
+$("#clean").onchange=()=>{if(RAW)processPhoto()};
+function whiten(src){
+  const w=src.width,h=src.height,sw=Math.max(8,Math.round(w/24)),sh=Math.max(8,Math.round(h/24));
+  const sm=document.createElement("canvas");sm.width=sw;sm.height=sh;const sx=sm.getContext("2d",{willReadFrequently:true});sx.drawImage(src,0,0,sw,sh);
+  const d=sx.getImageData(0,0,sw,sh),o=new Uint8ClampedArray(d.data),L=(a,i)=>.299*a[i]+.587*a[i+1]+.114*a[i+2];
+  /* 1) 每格取 3x3 最大值＝紙的亮度（墨線比格子小，不會被當成紙） */
+  for(let y=0;y<sh;y++)for(let x=0;x<sw;x++)for(let c=0;c<3;c++){let m=0;
+    for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const X=Math.min(sw-1,Math.max(0,x+dx)),Y=Math.min(sh-1,Math.max(0,y+dy));m=Math.max(m,d.data[(Y*sw+X)*4+c])}
+    o[(y*sw+x)*4+c]=m}
+  /* 2) 反光修復：比周圍 7x7 的中位數亮很多、而且接近爆白的格子＝反光。用周圍中位數取代，避免反光把周圍的紙壓暗、線條變灰 */
+  const o0=new Uint8ClampedArray(o),gl=new Uint8Array(sw*sh),R=3,med=(arr)=>{arr.sort((p,q)=>p-q);return arr[arr.length>>1]};
+  const lum=new Float32Array(sw*sh);for(let i=0;i<sw*sh;i++)lum[i]=L(o,i*4);
+  const ref=med(Array.from(lum)); // 整張圖的「一般紙亮度」；明顯比它亮的大片區域＝反光（大片反光時，只比周圍亮的判斷會失效）
+  for(let y=0;y<sh;y++)for(let x=0;x<sw;x++){
+    const v=[];for(let dy=-R;dy<=R;dy++)for(let dx=-R;dx<=R;dx++){const X=x+dx,Y=y+dy;if(X>=0&&Y>=0&&X<sw&&Y<sh)v.push(lum[Y*sw+X])}
+    const mv=med(v);if(lum[y*sw+x]>228&&(lum[y*sw+x]>mv+14||lum[y*sw+x]>ref+22))gl[y*sw+x]=1}
+  let nGl=0;for(let i=0;i<gl.length;i++)nGl+=gl[i];
+  if(nGl&&nGl<gl.length*.4){
+    const o2=new Uint8ClampedArray(o);
+    for(let y=0;y<sh;y++)for(let x=0;x<sw;x++)if(gl[y*sw+x])for(let c=0;c<3;c++){
+      const v=[];for(let dy=-R-1;dy<=R+1;dy++)for(let dx=-R-1;dx<=R+1;dx++){const X=x+dx,Y=y+dy;if(X>=0&&Y>=0&&X<sw&&Y<sh&&!gl[Y*sw+X])v.push(o[(Y*sw+X)*4+c])}
+      if(v.length)o2[(y*sw+x)*4+c]=med(v)}
+    o.set(o2)}
+  d.data.set(o);sx.putImageData(d,0,0);
+  const bg=document.createElement("canvas");bg.width=w;bg.height=h;const bx=bg.getContext("2d",{willReadFrequently:true});bx.imageSmoothingQuality="high";bx.drawImage(sm,0,0,w,h);
+  /* 反光遮罩：放大成平滑權重（反光邊緣淡出） */
+  let GM=null,B0=null;
+  if(nGl&&nGl<gl.length*.4){
+    const gm=document.createElement("canvas");gm.width=sw;gm.height=sh;const gx=gm.getContext("2d",{willReadFrequently:true}),gd=gx.createImageData(sw,sh);
+    for(let i=0;i<gl.length;i++){gd.data[i*4]=gl[i]*255;gd.data[i*4+3]=255}gx.putImageData(gd,0,0);
+    const gb=document.createElement("canvas");gb.width=w;gb.height=h;const gbx=gb.getContext("2d",{willReadFrequently:true});gbx.imageSmoothingQuality="high";gbx.filter="blur("+Math.max(2,Math.round(w/sw/2))+"px)";gbx.drawImage(gm,0,0,w,h);GM=gbx.getImageData(0,0,w,h).data;
+    const s0=document.createElement("canvas");s0.width=sw;s0.height=sh;const s0x=s0.getContext("2d");const d0=s0x.createImageData(sw,sh);d0.data.set(o0);s0x.putImageData(d0,0,0);
+    const b0=document.createElement("canvas");b0.width=w;b0.height=h;const b0x=b0.getContext("2d",{willReadFrequently:true});b0x.imageSmoothingQuality="high";b0x.drawImage(s0,0,0,w,h);B0=b0x.getImageData(0,0,w,h).data}
+  const out=document.createElement("canvas");out.width=w;out.height=h;const ox=out.getContext("2d");ox.drawImage(src,0,0);
+  const im=ox.getImageData(0,0,w,h),B=bx.getImageData(0,0,w,h).data,D=im.data;
+  for(let i=0;i<D.length;i+=4){const g=GM?GM[i]/255:0;
+    for(let c=0;c<3;c++){
+      /* 反光處：像素已被洗白，墨線只剩淺灰；用原本的亮度當基準，再加強對比把線條救回來 */
+      let r=D[i+c]/Math.max(B[i+c],40);if(r>1)r=1;
+      if(g>0){let q=D[i+c]/Math.max(B0[i+c],40);if(q>1)q=1;q=Math.pow(q,3.2);r=r*(1-g)+q*g}
+      let v=r*255;v=(v-50)/190*255;D[i+c]=v<0?0:v>255?255:v}}
+  ox.putImageData(im,0,0);return out;
+}
+function processPhoto(){
+  SRC=$("#clean").checked?whiten(RAW):RAW;
+  const w=Math.min(900,SRC.width);sc=w/SRC.width;cv.width=w;cv.height=Math.round(SRC.height*sc);
+  detect();
+}
+function detect(){
+  if(!SRC)return;
+  const gw=Math.min(480,SRC.width),gh=Math.max(1,Math.round(SRC.height*gw/SRC.width)),k=SRC.width/gw;
+  const t=document.createElement("canvas");t.width=gw;t.height=gh;const tx=t.getContext("2d",{willReadFrequently:true});tx.drawImage(SRC,0,0,gw,gh);
+  const d=tx.getImageData(0,0,gw,gh).data,TH=$("#clean").checked?180:140,ink=new Uint8Array(gw*gh);
+  for(let i=0;i<ink.length;i++){const l=.299*d[i*4]+.587*d[i*4+1]+.114*d[i*4+2];ink[i]=l<TH?1:0}
+  const A=gw*gh;
+  const run=rf=>{
+    const r=Math.max(1,Math.round(gw*rf));
+    const dil=a=>{const tmp=new Uint8Array(A),res=new Uint8Array(A);
+      for(let y=0;y<gh;y++)for(let x=0;x<gw;x++){let v=0;for(let dx=-r;dx<=r&&!v;dx++){const X=x+dx;if(X>=0&&X<gw&&a[y*gw+X])v=1}tmp[y*gw+x]=v}
+      for(let y=0;y<gh;y++)for(let x=0;x<gw;x++){let v=0;for(let dy=-r;dy<=r&&!v;dy++){const Y=y+dy;if(Y>=0&&Y<gh&&tmp[Y*gw+x])v=1}res[y*gw+x]=v}
+      return res};
+    const m=dil(ink),seen=new Uint8Array(A),out=[];let full=false;
+    for(let s0=0;s0<A;s0++){if(!m[s0]||seen[s0])continue;
+      const st=[s0];seen[s0]=1;let x0=gw,y0=gh,x1=0,y1=0;
+      while(st.length){const i=st.pop(),x=i%gw,y=(i/gw)|0;if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;
+        for(const j of [x>0?i-1:-1,x<gw-1?i+1:-1,y>0?i-gw:-1,y<gh-1?i+gw:-1])if(j>=0&&m[j]&&!seen[j]){seen[j]=1;st.push(j)}}
+      let inkN=0;for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)inkN+=ink[y*gw+x];
+      const bw=x1-x0,bh=y1-y0;
+      if(bw>gw*.85&&bh>gh*.85){full=true;continue}
+      if(inkN>A*.0008&&bw>gw*.04&&bh>gh*.04){const pad=r*.5,x=Math.max(0,x0-pad)*k,y=Math.max(0,y0-pad)*k;
+        out.push({x,y,w:Math.min(SRC.width,(x1+pad)*k)-x,h:Math.min(SRC.height,(y1+pad)*k)-y,on:true})}
+    }
+    return{out,full};
+  };
+  let res={out:[],full:false};
+  for(const rf of [.022,.014,.008,.004]){const r2=run(rf);if(r2.out.length>res.out.length||(!res.out.length&&r2.full))res=r2}
+  boxes=res.out.sort((a,b)=>(Math.abs(a.y-b.y)<SRC.height*.12?a.x-b.x:a.y-b.y));
+  if(!boxes.length&&!res.full)boxes=[{x:0,y:0,w:SRC.width,h:SRC.height,on:true}];
+  detNote=res.full?"圖與圖黏在一起，自動分不開，已盡量框出能分開的；其餘請在空白處拖曳自己框。":"";
+  drawBoxes();
+}
+let detNote="";
+function drawBoxes(){
+  cx.clearRect(0,0,cv.width,cv.height);if(!SRC)return;cx.drawImage(SRC,0,0,cv.width,cv.height);
+  const lw=Math.max(2,cv.width/300);cx.lineWidth=lw;cx.font=`bold ${Math.max(14,cv.width/45)}px sans-serif`;cx.textBaseline="top";
+  boxes.forEach((b,i)=>{const x=b.x*sc,y=b.y*sc,w=b.w*sc,h=b.h*sc;
+    cx.fillStyle=b.on?"rgba(217,72,43,.12)":"rgba(120,120,120,.35)";cx.fillRect(x,y,w,h);
+    cx.strokeStyle=b.on?"#d9482b":"#888";cx.strokeRect(x,y,w,h);
+    cx.fillStyle=b.on?"#d9482b":"#888";const tw=cx.measureText(i+1).width+10;cx.fillRect(x,y,tw,parseInt(cx.font)+6);cx.fillStyle="#fff";cx.fillText(i+1,x+5,y+3)});
+  if(dragS&&dragNow){cx.setLineDash([6,4]);cx.strokeStyle="#2f6f8f";cx.strokeRect(Math.min(dragS.x,dragNow.x),Math.min(dragS.y,dragNow.y),Math.abs(dragNow.x-dragS.x),Math.abs(dragNow.y-dragS.y));cx.setLineDash([])}
+  const n=boxes.filter(b=>b.on).length;$("#crop").textContent=`轉成卡片（${n} 隻）`;
+  $("#cropHint").textContent=`偵測到 ${boxes.length} 個圖，已選 ${n} 個。點框取消，空白處拖曳可新增框。${detNote}`;
+}
+const cpos=e=>{const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)*cv.width/r.width,y:(e.clientY-r.top)*cv.height/r.height}};
+cv.onpointerdown=e=>{if(!SRC)return;cv.setPointerCapture(e.pointerId);dragS=cpos(e);dragNow=null};
+cv.onpointermove=e=>{if(!dragS)return;dragNow=cpos(e);drawBoxes()};
+cv.onpointerup=e=>{
+  if(!dragS)return;const p=cpos(e),dx=Math.abs(p.x-dragS.x),dy=Math.abs(p.y-dragS.y);
+  if(dx<8&&dy<8){ // 點選：切換面積最小且包含此點的框
+    const hit=boxes.map((b,i)=>({b,i,a:b.w*b.h})).filter(o=>p.x/sc>=o.b.x&&p.x/sc<=o.b.x+o.b.w&&p.y/sc>=o.b.y&&p.y/sc<=o.b.y+o.b.h).sort((a,b)=>a.a-b.a)[0];
+    if(hit)hit.b.on=!hit.b.on;
+  }else if(dx>20&&dy>20){boxes.push({x:Math.min(dragS.x,p.x)/sc,y:Math.min(dragS.y,p.y)/sc,w:dx/sc,h:dy/sc,on:true})}
+  dragS=null;dragNow=null;drawBoxes();
+};
+$("#redet").onclick=()=>{if(RAW)detect();else alert("請先拍照或選照片")};
+$("#clearBox").onclick=()=>{boxes=[];drawBoxes()};
+$("#whole").onclick=()=>{if(!SRC){alert("請先拍照或選照片");return}boxes=[{x:0,y:0,w:SRC.width,h:SRC.height,on:true}];drawBoxes()};
+function randStats(){return{type:DEFAULT_TYPE,hp:rnd(300,800),atk:rnd(50,110),def:rnd(30,100),spd:rnd(20,95)}}
+$("#crop").onclick=async()=>{
+  const sel=boxes.filter(b=>b.on&&b.w>10&&b.h>10);if(!SRC||!sel.length){alert("請先拍照或選照片，並至少選一個框");return}
+  if(M.length+sel.length>MAX_CARDS){toast(`圖鑑已滿（上限 ${MAX_CARDS} 張），請先刪除一些卡片`);return}
+  const by=$("#author").value.trim(),t0=Date.now();
+  sel.forEach((b,i)=>{
+    const k=Math.min(1,640/Math.max(b.w,b.h)),c=document.createElement("canvas");c.width=Math.round(b.w*k);c.height=Math.round(b.h*k);
+    c.getContext("2d").drawImage(SRC,b.x,b.y,b.w,b.h,0,0,c.width,c.height);
+    M.push({id:"u"+t0+"_"+i,src:c.toDataURL("image/jpeg",.8),...(()=>{const st=randStats();return{name:$("#rname").checked?randName(st.type):"新怪獸"+(M.length+1),skill:TYPE_SKILL[st.type].ults[0],tv:TV,...st}})(),story:"",by,wins:0,cp:null,t:t0+i});
+  });
+  if($("#acolor").checked){toast("自動上色中…",null,null,60000);for(const m of M.filter(m=>m.id.startsWith("u"+t0+"_")))await recolor(m,"type")}
+  save();boxes=[];RAW=SRC=null;cx.clearRect(0,0,cv.width,cv.height);$("#cropHint").textContent=`已加入 ${sel.length} 隻到圖鑑`;toast(`已加入 ${sel.length} 隻，排在圖鑑最前面（排序：依新增）`);
+  renderAll();
+  document.querySelector('[data-t=dex]').click();$("#sortBy").value="new";LS.set("mc_sort","new");renderDex();window.scrollTo(0,0);
+  const created=M.filter(m=>m.id.startsWith("u"+t0+"_")),auto=created.map(m=>m.name);
+  if($("#readname").checked&&canReadNames()){
+    const names=await runReadNames(created);
+    if(names){const n=applyNames(created,names,auto);toast(`Claude 讀到 ${n} 個名字（共 ${created.length} 張）。可能不完全正確，請檢查；沒讀到的維持原名`,null,null,9000)}
+  }else if(sel.length===1)openEdit(M[M.length-1].id);
+};
+
+/* ---- 讓 Claude 讀照片上的名字（需要 sample 能力；只有在你按下按鈕時才會把圖送出） ---- */
+let SAMPLE=null,SAMP_LIM=null,SAMP_DECLINED=false,_readCtl=null;
+(async()=>{try{if(window.claude&&typeof claude.use==="function"){SAMPLE=await claude.use("sample");if(SAMPLE&&SAMPLE.limits){const l=await SAMPLE.limits().catch(()=>null);SAMP_LIM=(l&&l.images)||null}}}catch(e){SAMPLE=null}updateNameUI()})();
+function canReadNames(){return !!(SAMPLE&&SAMP_LIM&&!SAMP_DECLINED)}
+{const sv=LS.get("mc_readname");if(sv==="0")$("#readname").checked=false}
+$("#readname").addEventListener("change",()=>LS.set("mc_readname",$("#readname").checked?"1":"0"));
+function updateNameUI(){const on=canReadNames();$("#readnameWrap").hidden=!on;$("#readNameBtn").hidden=!on;$("#readnameHint").textContent=on?"":"（此環境無法使用 Claude 讀名字，可在編輯視窗手動輸入名字）"}
+async function nameBlob(src,idx){ // 縮成 900px 的 JPEG；多張時在左下角加編號（只加在送出的那份）
+  const im=await loadImg(src),k=Math.min(1,900/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement("canvas");
+  c.width=Math.max(1,Math.round(im.naturalWidth*k));c.height=Math.max(1,Math.round(im.naturalHeight*k));
+  const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);
+  if(idx!=null){const r=Math.max(18,Math.round(c.width*.07)),bw=r*1.9,bh=r*1.6,bx=6,by=c.height-bh-6;
+    x.fillStyle="#fff";x.strokeStyle="#d00";x.lineWidth=3;x.fillRect(bx,by,bw,bh);x.strokeRect(bx,by,bw,bh);
+    x.fillStyle="#d00";x.font=`bold ${Math.round(r*1.1)}px sans-serif`;x.textAlign="center";x.textBaseline="middle";x.fillText(String(idx),bx+bw/2,by+bh/2)}
+  return new Promise(res=>c.toBlob(b=>res(b),"image/jpeg",.85));
+}
+function cleanName(t){
+  let v=String(t==null?"":t).replace(/[\s"'`「」『』【】\[\]（）()、，,。.:：;；!！?？*#_\-\\\/]/g,"").slice(0,12);
+  return /^(null|none|無|沒有|未知)$/i.test(v)?"":v;
+}
+async function readNames(cards){
+  const max=Math.max(1,Math.min(SAMP_LIM.maxCount||1,8)),out=new Array(cards.length).fill("");
+  _readCtl=new AbortController();
+  for(let st=0;st<cards.length;st+=max){
+    const part=cards.slice(st,st+max),n=part.length,blobs=await Promise.all(part.map((m,i)=>nameBlob(origOf(m),n>1?i+1:null)));
+    const prompt=n===1?"這是一張小朋友畫的怪獸卡片的照片。圖上通常會有小朋友手寫的怪獸名字（可能是中文）。請只回覆那個名字，最多 12 個字，不要加任何說明或標點。如果看不到名字，只回覆 NONE。"
+      :`這是 ${n} 張小朋友畫的怪獸卡片的照片，每張左下角有白底紅字的編號 1～${n}（是我加上去的，不是怪獸的名字）。圖上通常有小朋友手寫的怪獸名字（可能是中文）。請依編號順序，只用一個 JSON 陣列回覆，長度必須剛好是 ${n}，每項是該張圖上手寫的名字（字串，最多 12 個字）；看不到名字就填 null。不要加任何說明、不要加程式碼區塊。例如：["獅王",null,"火龍"]`;
+    const r=await SAMPLE(prompt,{images:blobs,cache:false,signal:_readCtl.signal,modelTier:"default"});
+    const t=(r&&r.text)||"";
+    if(n===1)out[st]=cleanName(t);
+    else{const m=t.match(/\[[\s\S]*\]/);if(m){try{const a=JSON.parse(m[0]);if(Array.isArray(a)&&a.length===n)a.forEach((v,i)=>{out[st+i]=cleanName(v)})}catch(e){}}}
+  }
+  return out;
+}
+async function runReadNames(cards){
+  if(!canReadNames()){toast("此環境無法使用 Claude 讀名字");return null}
+  toast(`Claude 正在讀 ${cards.length} 張的名字…（可能要 10～60 秒）`,"取消",()=>{_readCtl&&_readCtl.abort()},180000);
+  try{return await readNames(cards)}
+  catch(e){const c=e&&e.code;
+    if(c==="cancelled")toast("已取消，名字維持原樣");
+    else if(c==="not_granted"){SAMP_DECLINED=true;updateNameUI();toast("你沒有允許 Claude 讀圖，名字維持原樣（這次開啟頁面期間不會再詢問）")}
+    else if(c==="rate_limited")toast("Claude 用量或頻率已達上限，請稍後再試；名字維持原樣");
+    else toast("Claude 暫時讀不到名字（"+(c||"錯誤")+"），名字維持原樣");
+    return null}
+}
+function applyNames(cards,names,auto){ // 你已經自己改過的名字不會被蓋掉
+  let n=0;cards.forEach((m,i)=>{const nm=names[i];if(!nm||m.name!==auto[i]||!M.includes(m))return;m.name=nm;n++});save();renderAll();return n;
+}
+$("#readNameBtn").onclick=async()=>{
+  if(!editing)return;const out=await runReadNames([editing]);
+  if(out&&out[0]){f_name.value=out[0];toast("Claude 讀到的名字：「"+out[0]+"」（按「儲存」才會套用）")}else if(out)toast("沒有讀到名字，可以手動輸入");
+};
+
+/* ---- 備份檔：把全部卡片存成一個檔案（存在你的裝置／雲端硬碟），之後可匯入還原 ---- */
+(()=>{
+  let DL=undefined;
+  const getDL=async()=>{if(DL!==undefined)return DL;try{DL=(window.claude&&claude.use?await claude.use("downloads"):null)||null}catch(e){DL=null}return DL};
+  getDL().then(d=>{if(!d)$("#bkSave").title="這個環境不能直接下載檔案"});
+  $("#bkSave").onclick=async()=>{
+    const d=await getDL(),pad=n=>String(n).padStart(2,"0"),t=new Date(),
+      fn=`monster-backup-${t.getFullYear()}${pad(t.getMonth()+1)}${pad(t.getDate())}-${pad(t.getHours())}${pad(t.getMinutes())}.json`,
+      data=JSON.stringify({app:"monster-cards",v:2,t:Date.now(),n:M.length,cards:M});
+    if(d){try{await d.save({filename:fn,data});toast(`已產生備份檔（${M.length} 張，${(data.length/1048576).toFixed(1)}MB）。請把檔案存好`);return}
+      catch(e){if(e&&e.code==="declined"){toast("已取消下載");return}}}
+    try{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([data],{type:"application/json"}));a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);toast(`已下載備份檔（${M.length} 張）`)}
+    catch(e){toast("這個環境無法下載檔案，請改用一般瀏覽器分頁開啟連結")}
+  };
+  $("#bkLoad").onclick=()=>$("#bkFile").click();
+  $("#bkFile").onchange=async e=>{
+    const f=e.target.files[0];e.target.value="";if(!f)return;
+    let o;try{o=JSON.parse(await f.text())}catch(_){toast("這個檔案讀不出來，請選用「下載備份檔」存出來的 .json");return}
+    const L=o&&o.app==="monster-cards"&&Array.isArray(o.cards)?o.cards.filter(c=>c&&typeof c.id==="string"&&typeof c.src==="string"):null;
+    if(!L||!L.length){toast("這不是怪獸圖鑑的備份檔，或裡面沒有卡片");return}
+    const y=await ask(`備份檔有 ${L.length} 張卡片（${o.t?new Date(o.t).toLocaleString():"時間不明"}）。匯入後會取代目前的 ${M.length} 張；目前的內容會先留成還原點，可用「還原上一次存檔」找回。確定匯入？`,"確定匯入");
+    if(!y)return;
+    M=L.slice(0,MAX_CARDS);postLoad();SELECTED.clear();save();renderAll();toast(`已匯入 ${M.length} 張`);
+  };
+})();
+/* ---- 雲端保存：卡片同步到「你的 Claude 帳號」底下的私人空間，不靠瀏覽器儲存 ----
+   本機（IndexedDB）仍是快取；每次儲存後約 1 秒自動同步。開頁面時若雲端比本機新，會載入雲端版本。 */
+const CLOUD={db:null,root:null,state:"off",msg:"",time:0,n:0,rev:null,sigs:{},nch:{},busy:false,again:false,paused:false,adopting:false,tm:0};
+const CH=120000,csleep=ms=>new Promise(r=>setTimeout(r,ms));
+const cid=id=>String(id).replace(/[^A-Za-z0-9_\-]/g,c=>"~"+c.charCodeAt(0).toString(16));
+const cardPack=m=>{const o={...m};if(window.SAMPLES&&SAMPLES[m.id]&&o.src===SAMPLES[m.id])o.src="@s";return JSON.stringify(o)};
+const cardUnpack=t=>{const o=JSON.parse(t);if(o.src==="@s")o.src=(window.SAMPLES&&SAMPLES[o.id])||`samples/${o.id}.jpg`;return o};
+async function cretry(fn){try{return await fn()}catch(e){if(e&&e.code==="unavailable"){await csleep(600+Math.random()*600);return await fn()}throw e}}
+const cErr=e=>e&&e.code==="quota_exceeded"?"雲端空間已滿（"+(e.message||"")+"）":e&&e.code==="not_granted"?"沒有取得雲端權限":(e&&(e.code||e.message))||"未知錯誤";
+function cbar(){
+  const el=$("#cloudBar");if(!el)return;
+  const btn=` <button class="b" id="cloudNow" style="padding:2px 10px;font-size:13px">☁️ 立即同步</button>`;
+  const t=CLOUD.time?new Date(CLOUD.time).toTimeString().slice(0,8):"";
+  const pend=LS.get("mc_unsynced")==="1";
+  if(CLOUD.state==="off")el.innerHTML=`<small>☁️ 雲端保存：這個環境沒有提供（只存在這個瀏覽器）。請用「下載備份檔」保險。</small>`;
+  else if(CLOUD.state==="sync")el.innerHTML=`☁️ 雲端同步中…${CLOUD.msg?` <small>${esc(CLOUD.msg)}</small>`:""}`;
+  else if(CLOUD.state==="ok")el.innerHTML=`☁️ <b style="color:#2e8b57">已存到你的 Claude 雲端</b>（${CLOUD.n} 張，${t}）。關掉網頁、換裝置都還在。${btn}`;
+  else if(CLOUD.state==="paused")el.innerHTML=`<div class="panel" style="border-color:#e0a000;margin:0">☁️ 已暫停雲端同步（你選擇先不覆蓋雲端）。這裡的修改目前只在本機。${btn}</div>`;
+  else el.innerHTML=`<div class="panel" style="border-color:#c0392b;margin:0"><b style="color:#c0392b">☁️ 雲端同步失敗</b>：${esc(CLOUD.msg)}。${pend?"最近的修改還沒上傳，": ""}請保持頁面開著再按「立即同步」，或先「下載備份檔」。${btn}</div>`;
+}
+document.addEventListener("click",e=>{if(e.target.id==="cloudNow"){CLOUD.paused=false;cloudPush(true)}});
+async function cloudInit(){
+  let uid=null;
+  try{const U=window.claude&&claude.use?await claude.use("user"):null;CLOUD.db=window.claude&&claude.use?await claude.use("db"):null;uid=U&&U.id?await U.id():null}catch(e){CLOUD.db=null}
+  if(!CLOUD.db||!uid){CLOUD.db=null;CLOUD.state="off";cbar();return}
+  CLOUD.root=CLOUD.db.collection("data/users/"+uid).doc("mc");
+  CLOUD.state="sync";CLOUD.msg="檢查雲端…";cbar();
+  try{
+    const ms=await cretry(()=>CLOUD.root.collection("meta").doc("state").get()),meta=ms.exists?ms.data():null,last=LS.get("mc_cloud_rev"),uns=LS.get("mc_unsynced")==="1";
+    if(!meta){CLOUD.sigs={};if(M.length)await cloudPush(true);else{CLOUD.state="ok";CLOUD.n=0;CLOUD.time=Date.now();cbar()}}
+    else if(meta.rev===last){CLOUD.sigs=meta.sg||{};CLOUD.rev=meta.rev;if(uns)await cloudPush(true);else{CLOUD.state="ok";CLOUD.n=meta.n||M.length;CLOUD.time=meta.t||Date.now();cbar()}}
+    else if(uns)await cloudPush(true); // 雲端和本機都有變動 → 在 pushOnce 裡讓你選
+    else await cloudAdopt(meta);
+  }catch(e){CLOUD.state="err";CLOUD.msg=cErr(e);cbar()}
+}
+async function cloudAdopt(meta){
+  const ids=meta.ids||[],out=[];CLOUD.state="sync";
+  const getCard=async id=>{
+    const d=await cretry(()=>CLOUD.root.collection("cards").doc(cid(id)).get());if(!d.exists)throw new Error("雲端缺少卡片 "+id);
+    const n=d.data().n||1,parts=[];
+    for(let j=0;j<n;j++){const k=await cretry(()=>CLOUD.root.collection("chunks").doc(cid(id)+"_"+j).get());if(!k.exists)throw new Error("雲端缺少卡片資料 "+id);parts.push(k.data().d)}
+    return cardUnpack(parts.join(""));
+  };
+  let done=0;const q=ids.slice(),workers=Array.from({length:Math.min(5,q.length||1)},async()=>{while(q.length){const id=q.shift(),i=ids.indexOf(id);out[i]=await getCard(id);done++;CLOUD.msg=`從雲端載入 ${done}/${ids.length}`;cbar()}});
+  await Promise.all(workers);
+  CLOUD.adopting=true;
+  try{M=out.filter(Boolean);postLoad();SELECTED.clear();await persist();
+    LS.set("mc_cloud_rev",meta.rev);LS.del("mc_unsynced");CLOUD.rev=meta.rev;CLOUD.sigs=meta.sg||{};
+    CLOUD.state="ok";CLOUD.n=M.length;CLOUD.time=meta.t||Date.now();renderAll();cbar();
+    toast(`已從雲端載入 ${M.length} 張卡片`)}
+  finally{CLOUD.adopting=false}
+}
+async function pushOnce(){
+  const R=CLOUD.root,snap=M.slice();
+  const ms=await cretry(()=>R.collection("meta").doc("state").get()),meta=ms.exists?ms.data():null,last=LS.get("mc_cloud_rev");
+  if(meta&&meta.rev!==last){
+    CLOUD.state="sync";cbar();
+    const useCloud=await ask(`雲端有另一份和這裡不同的資料（${meta.n||"?"} 張，${meta.t?new Date(meta.t).toLocaleString():"時間不明"}）。\n要改用雲端的版本嗎？（這裡的內容會先留成還原點，可用「還原上一次存檔」找回）`,"改用雲端版本");
+    if(useCloud){await cloudAdopt(meta);return}
+    const over=await ask("改成用「這裡」的版本覆蓋雲端？雲端那份會被取代。","覆蓋雲端");
+    if(!over){CLOUD.paused=true;CLOUD.state="paused";cbar();return}
+    LS.set("mc_cloud_rev",meta.rev);CLOUD.sigs=meta.sg||{};
+  }
+  const old=new Set(meta?meta.ids||[]:[]),ids=snap.map(m=>m.id),keep=new Set(ids),sg={};
+  let up=0;
+  for(const m of snap){
+    const g=sigOf([m]);sg[m.id]=g;
+    if(CLOUD.sigs[m.id]===g&&old.has(m.id))continue;
+    const t=cardPack(m),n=Math.max(1,Math.ceil(t.length/CH));
+    CLOUD.msg=`上傳 ${++up}…`;cbar();
+    for(let j=0;j<n;j++){const d=t.slice(j*CH,(j+1)*CH);await cretry(()=>R.collection("chunks").doc(cid(m.id)+"_"+j).set({d}))}
+    await cretry(()=>R.collection("cards").doc(cid(m.id)).set({id:m.id,n,h:g,t:Date.now()}));
+    const pn=CLOUD.nch[m.id];if(pn&&pn>n)for(let j=n;j<pn;j++)await cretry(()=>R.collection("chunks").doc(cid(m.id)+"_"+j).delete());
+    CLOUD.nch[m.id]=n;
+  }
+  for(const id of old)if(!keep.has(id)){
+    try{const d=await cretry(()=>R.collection("cards").doc(cid(id)).get()),n=d.exists?(d.data().n||1):1;
+      for(let j=0;j<n;j++)await cretry(()=>R.collection("chunks").doc(cid(id)+"_"+j).delete());
+      await cretry(()=>R.collection("cards").doc(cid(id)).delete())}catch(e){}
+  }
+  const rev=Date.now()+"."+Math.random().toString(36).slice(2,8),now=Date.now();
+  await cretry(()=>R.collection("meta").doc("state").set({rev,ids,sg,n:ids.length,t:now}));
+  LS.set("mc_cloud_rev",rev);CLOUD.rev=rev;CLOUD.sigs=sg;
+  if(sigOf(M)===sigOf(snap))LS.del("mc_unsynced");else CLOUD.again=true;
+  CLOUD.state="ok";CLOUD.msg="";CLOUD.n=ids.length;CLOUD.time=now;cbar();
+}
+async function cloudPush(now){
+  if(!CLOUD.db||CLOUD.paused&&!now)return;
+  if(CLOUD.busy){CLOUD.again=true;return}
+  CLOUD.busy=true;
+  try{do{CLOUD.again=false;await pushOnce()}while(CLOUD.again&&!CLOUD.paused)}
+  catch(e){CLOUD.state="err";CLOUD.msg=cErr(e);cbar()}
+  finally{CLOUD.busy=false}
+}
+function cloudKick(){
+  if(!CLOUD.db||CLOUD.adopting||STALE)return;
+  clearTimeout(CLOUD.tm);CLOUD.tm=setTimeout(()=>cloudPush(false),700);
+  if(CLOUD.state!=="sync"){CLOUD.state="sync";CLOUD.msg="等待上傳…";cbar()}
+}
+document.addEventListener("visibilitychange",()=>{if(document.hidden&&CLOUD.db&&LS.get("mc_unsynced")==="1"){clearTimeout(CLOUD.tm);cloudPush(false)}});
+window.addEventListener("beforeunload",e=>{if(CLOUD.db&&(CLOUD.busy||CLOUD.tm&&LS.get("mc_unsynced")==="1"&&CLOUD.state!=="ok")){e.preventDefault();e.returnValue=""}});
+/* ---- 換色按鈕 ---- */
+$("#rcolBtn").onclick=async()=>{if(!editing)return;const m=editing;toast("上色中…",null,null,60000);await recolor(m,"random");save();renderAll();if($("#editPrev"))$("#editPrev").src=m.src;toast("已隨機換色")};
+$("#colSel").onclick=()=>{
+  const L=SELECTED.size?M.filter(m=>SELECTED.has(m.id)):M.slice(),lab=SELECTED.size?`勾選的 ${L.length} 張`:`全部 ${L.length} 張`;
+  if(!L.length){toast("圖鑑是空的");return}
+  ask(`幫${lab}卡片隨機換色？換色後 9 秒內可復原。`,"確定換色").then(async y=>{
+    if(!y)return;const old=L.map(m=>[m,m.src,m.orig]);toast("上色中…",null,null,120000);
+    for(const m of L)await recolor(m,"random");save();renderAll();
+    toast(`已換色 ${L.length} 張`,"復原",()=>{old.forEach(([m,sr,o])=>{m.src=sr;if(o===undefined)delete m.orig;else m.orig=o});save();renderAll()});
+  });
+};
+
+
+
+/* ---- 列印 ---- */
+function printList(){const L=SELECTED.size?M.filter(m=>SELECTED.has(m.id)):M;return L}
+function renderPrint(){const L=printList();$("#pprev").innerHTML=L.map(m=>cardHTML(m)).join("");$("#pcnt").textContent=`${L.length} 張，約 ${Math.ceil(L.length/9)} 頁`}
+$("#doPrint").onclick=()=>{$("#sheet").innerHTML=printList().map(m=>cardHTML(m)).join("");setTimeout(()=>window.print(),200)};
+
+/* ---- 共用 ---- */
+function renderAll(){renderDex();fillSel();renderRank();renderPrint();storeBar()}
+$("#nav").addEventListener("click",e=>{
+  const t=e.target.dataset.t;if(!t)return;
+  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b===e.target));
+  document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id===t));
+  if(t==="print")renderPrint();
+  t==="battle"?enterBattle():leaveBattle();
+});
+applyClear();
+boot();
+</script>
+<script>if("serviceWorker"in navigator&&location.protocol.startsWith("http"))addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
+</body>
+</html>
