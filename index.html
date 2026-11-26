@@ -85,9 +85,9 @@ body.noanim .card .im img{animation:none}
 .ko .card .im img{animation:none}
 dialog#pdlg{max-width:680px;max-height:96vh;max-height:96dvh;overflow:hidden;padding:12px}
 dialog#pdlg[open]{display:flex;flex-direction:column}
-#pwrap{flex:1 1 auto;min-height:150px;overflow:auto;border:1px solid var(--line);border-radius:8px;background:#fff;-webkit-overflow-scrolling:touch}
+#pwrap{flex:1 1 auto;min-height:150px;overflow:auto;border:1px solid var(--line);border-radius:8px;background:repeating-conic-gradient(#e4e4e4 0 25%,#fff 0 50%) 0 0/18px 18px;-webkit-overflow-scrolling:touch}
 #pTop{position:sticky;top:0;z-index:2;background:var(--bg);padding-bottom:6px;margin:0 0 6px}
-#pcv{max-width:100%;max-height:60vh;border:1px solid var(--line);border-radius:8px;cursor:crosshair;background:#fff}
+#pcv{max-width:100%;max-height:60vh;border:1px solid var(--line);border-radius:8px;cursor:crosshair;background:transparent}
 .sw{width:34px;height:34px;border-radius:50%;border:3px solid var(--line);cursor:pointer;padding:0}.sw.on{border-color:var(--ink)}
 /* 張嘴 */
 .card .im{container-type:size}
@@ -179,7 +179,7 @@ dialog::backdrop{background:#0007}
 <body>
 <header>
   <h1>🐉 怪獸圖鑑工坊</h1>
-  <span class="sub">把小朋友的塗鴉變成卡牌、對戰、可印可送的作品集 · <span id="buildTag">v2 · 更新 11/26 · 去字＋讀屬性</span></span>
+  <span class="sub">把小朋友的塗鴉變成卡牌、對戰、可印可送的作品集 · <span id="buildTag">v2 · 更新 11/26 · 魔術棒去背</span></span>
 </header>
 <p class="sub" style="max-width:1200px;margin:0 auto 10px;padding:0 0 0 0">🔒 隱私：你上傳的照片只在這台裝置的瀏覽器裡處理與保存，別人也看不到。換裝置或清除網站資料後會消失。<b>唯一的例外</b>：你勾選「🤖 讓 Claude 讀照片上的名字」並按下「轉成卡片」（或在編輯視窗按「讓 Claude 讀名字」）時，被框選的卡片圖會送給 Claude 辨識名字；第一次會先問你同意，不勾就完全不會送出。</p>
 <div id="storeBar" class="sub" style="max-width:1200px;margin:0 auto 10px"></div>
@@ -365,8 +365,9 @@ dialog::backdrop{background:#0007}
   </div>
   <div class="bar" id="pal"></div>
   <div class="bar">
-    <button class="b p" id="mFill">🪣 填色區塊</button><button class="b" id="mBrush">🖌 畫筆</button><button class="b" id="mHeal" title="把書上印的字或雜物塗掉：用旁邊的顏色補起來">🩹 去字</button>
+    <button class="b p" id="mFill">🪣 填色區塊</button><button class="b" id="mBrush">🖌 畫筆</button><button class="b" id="mWand" title="點背景：把點到的、顏色相近又相連的區域變透明，只留下角色">🪄 去背</button><button class="b" id="mHeal" title="把書上印的字或雜物塗掉：用旁邊的顏色補起來">🩹 去字</button>
     <label class="b">自訂色<input type="color" id="pcol" value="#e63946" style="width:36px;height:22px;padding:0;border:0;vertical-align:middle"></label>
+    <label>去背範圍 <input id="wandTol" type="range" min="8" max="90" value="38" style="width:80px;vertical-align:middle"></label>
     <label>畫筆大小 <input id="brushSz" type="range" min="2" max="30" value="8" style="width:80px;vertical-align:middle"></label>
     <label>放大 <input id="pzoom" type="range" min="100" max="400" value="100" style="width:80px;vertical-align:middle"></label>
   </div>
@@ -880,6 +881,22 @@ function stamp(cx,cy){
   for(let y=Math.max(0,cy-R);y<=Math.min(h-1,cy+R);y++)for(let x=Math.max(0,cx-R);x<=Math.min(w-1,cx+R);x++){
     if((x-cx)*(x-cx)+(y-cy)*(y-cy)>R*R)continue;const i=y*w+x,f=Math.min(1,lum[i]/215);d[i*4]=r*f;d[i*4+1]=g*f;d[i*4+2]=b*f}
 }
+/* 去背（魔術棒）：從點到的像素往外長，顏色和起點相近、或和相鄰已選像素幾乎一樣的就一起變透明 */
+function wandAt(x,y){
+  const {w,h}=P,d=P.img.data,s0=(y*w+x);if(d[s0*4+3]<10){toast("這裡已經是透明的了");return}
+  const tol=+$("#wandTol").value,T2=tol*tol,C2=(tol*.3)*(tol*.3),r0=d[s0*4],g0=d[s0*4+1],b0=d[s0*4+2],seen=new Uint8Array(w*h),st=new Int32Array(w*h);let sp=0,cnt=0;
+  snap();seen[s0]=1;st[sp++]=s0;
+  const tryP=(j,i)=>{if(seen[j]||d[j*4+3]<10)return;
+    const dr=d[j*4]-r0,dg=d[j*4+1]-g0,db=d[j*4+2]-b0,e2=dr*dr+dg*dg+db*db;let ok=e2<T2;
+    if(!ok){const ar=d[j*4]-d[i*4],ag=d[j*4+1]-d[i*4+1],ab=d[j*4+2]-d[i*4+2];ok=ar*ar+ag*ag+ab*ab<C2&&e2<T2*3}
+    if(ok){seen[j]=1;st[sp++]=j}};
+  const order=[];
+  while(sp){const i=st[--sp];order.push(i);const X=i%w,Y=(i/w)|0;if(X>0)tryP(i-1,i);if(X<w-1)tryP(i+1,i);if(Y>0)tryP(i-w,i);if(Y<h-1)tryP(i+w,i)}
+  order.forEach(i=>{d[i*4+3]=0});cnt=order.length;
+  flush();
+  const pct=Math.round(cnt*100/(w*h));
+  toast(pct>85?`去掉了 ${pct}%，太多了。按「復原」，把「去背範圍」調小再試`:`已去掉 ${pct}% 的背景。還有殘留就再點一下；去太多按「復原」`);
+}
 /* 去字（修補筆）：以筆刷周圍一圈的「中位數顏色」填滿筆刷範圍，邊緣羽化。適合蓋掉書上印的字、標籤。 */
 function healStamp(cx,cy){
   const {w,h}=P,d=P.img.data,R=Math.max(6,Math.round(P.brush*1.6)),ring=[];
@@ -895,6 +912,7 @@ function healStamp(cx,cy){
 let _last=null;
 $("#pcv").addEventListener("pointerdown",e=>{
   if(!P)return;const [x,y]=ppos(e);if(x<0||y<0||x>=P.w||y>=P.h)return;
+  if(P.mode==="wand"){wandAt(x,y);return}
   if(P.mode==="heal"){e.target.setPointerCapture(e.pointerId);snap();_last=[x,y];healStamp(x,y);flush();return}
   if(P.mode==="brush"){e.target.setPointerCapture(e.pointerId);snap();_last=[x,y];stamp(x,y);flush();return}
   const o=nearOpen(x,y);if(!o){toast("點在線條上了，請點小格裡面");return}
@@ -915,8 +933,9 @@ $("#pcv").addEventListener("pointermove",e=>{
   for(let k=step;k<=n+step-1;k+=step){const t=Math.min(1,k/n),px=Math.round(x0+(x-x0)*t),py=Math.round(y0+(y-y0)*t);if(P.mode==="heal")healStamp(px,py);else stamp(px,py)}_last=[x,y];flush();
 });
 ["pointerup","pointercancel"].forEach(t=>$("#pcv").addEventListener(t,()=>{if(_last&&P&&P.mode==="heal")recalcBarrier();_last=null}));
-function setMode(m){P.mode=m;$("#mFill").classList.toggle("p",m==="fill");$("#mBrush").classList.toggle("p",m==="brush");$("#mHeal").classList.toggle("p",m==="heal");$("#pcv").style.cursor=m==="fill"?"crosshair":"cell";$("#pcv").style.touchAction=m==="fill"?"manipulation":"none"}
-$("#mFill").onclick=()=>setMode("fill");$("#mBrush").onclick=()=>setMode("brush");$("#mHeal").onclick=()=>{setMode("heal");toast("🩹 去字：用手指或滑鼠把字塗掉，會用旁邊的顏色補起來。字比較大時把「畫筆大小」拉大。塗錯了按「復原」")};
+function setMode(m){P.mode=m;$("#mFill").classList.toggle("p",m==="fill");$("#mBrush").classList.toggle("p",m==="brush");$("#mHeal").classList.toggle("p",m==="heal");$("#mWand").classList.toggle("p",m==="wand");$("#pcv").style.cursor=m==="fill"||m==="wand"?"crosshair":"cell";$("#pcv").style.touchAction=m==="fill"||m==="wand"?"manipulation":"none"}
+$("#mFill").onclick=()=>setMode("fill");$("#mBrush").onclick=()=>setMode("brush");$("#mWand").onclick=()=>{setMode("wand");toast("🪄 去背：點一下背景（頁面底色），顏色相近又相連的地方會變透明。一次沒去乾淨就多點幾下；去太多了按「復原」，把「去背範圍」調小")};
+$("#mHeal").onclick=()=>{setMode("heal");toast("🩹 去字：用手指或滑鼠把字塗掉，會用旁邊的顏色補起來。字比較大時把「畫筆大小」拉大。塗錯了按「復原」")};
 $("#brushSz").oninput=e=>{P.brush=+e.target.value};
 $("#pzoom").oninput=e=>{$("#pcv").style.width=e.target.value+"%"};
 $("#pMax").oninput=e=>{P.maxR=+e.target.value;$("#pMaxV").textContent=P.maxR>=100?"不限制":P.maxR+"%"};
@@ -928,7 +947,13 @@ $("#pauto").onclick=()=>{snap();autoColorInto(P.img.data,P.lum,P.w,P.h,typesOf(P
 $("#pundo").onclick=()=>{if(P.stack.length){P.img.data.set(P.stack.pop());flush()}};
 $("#pbase").onclick=async()=>{snap();const d=pixels(await loadImg(P.baseSrc)).data;P.img.data.set(d);flush()};
 function paintSave(){
-  if(!P)return;P.m.orig=P.m.orig||P.baseSrc;P.m.src=$("#pcv").toDataURL("image/jpeg",.82);
+  if(!P)return;P.m.orig=P.m.orig||P.baseSrc;
+  {const {w,h}=P,d=P.img.data;let tr=0,x0=w,y0=h,x1=-1,y1=-1;
+   for(let y=0;y<h;y++)for(let x=0;x<w;x++){const a=d[(y*w+x)*4+3];if(a<250)tr++;if(a>10){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}}
+   if(tr>w*h*.01&&x1>x0&&y1>y0){ // 有去背：存成 PNG（保留透明），並裁掉四周透明的部分
+     const pad=3,cx=Math.max(0,x0-pad),cy=Math.max(0,y0-pad),cw=Math.min(w,x1+pad+1)-cx,ch=Math.min(h,y1+pad+1)-cy,o=document.createElement("canvas");o.width=cw;o.height=ch;
+     o.getContext("2d").drawImage($("#pcv"),cx,cy,cw,ch,0,0,cw,ch);P.m.src=o.toDataURL("image/png")}
+   else P.m.src=$("#pcv").toDataURL("image/jpeg",.82)}
   save();P=null;$("#pdlg").close();renderAll();toast("已儲存上色結果");
 }
 $("#pdone").onclick=paintSave;
@@ -983,6 +1008,7 @@ async function makeCut(src){
   const w=Math.round(im.naturalWidth*k),h=Math.round(im.naturalHeight*k),n=w*h;
   const c=document.createElement("canvas");c.width=w;c.height=h;const x=c.getContext("2d",{willReadFrequently:true});x.drawImage(im,0,0,w,h);
   const id=x.getImageData(0,0,w,h),d=id.data;
+  {let tr=0;for(let i=0;i<n;i++)if(d[i*4+3]<200)tr++;if(tr>n*.04)return src} // 已經去過背（有透明）就直接用
   const pc=[0,1,2].map(ch=>{const hs=new Uint32Array(256);for(let i=0;i<n;i++)hs[d[i*4+ch]]++;let a=0;for(let v=0;v<256;v++){a+=hs[v];if(a>=n*.8)return Math.max(v,90)}return 255});
   const pm=Math.min(...pc),al=new Uint8Array(n);
   for(let i=0;i<n;i++){const mn=Math.min(d[i*4],d[i*4+1],d[i*4+2])/pm,a=(0.9-mn)/0.3;al[i]=a<0?0:a>1?255:a*255}
